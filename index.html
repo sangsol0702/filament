@@ -1029,7 +1029,7 @@ document.getElementById('overlay').addEventListener('click', e => {
 });
 
 // ── NAV ──────────────────────────────────────────────────
-function switchPage(id) {
+window.switchPage = function switchPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nl').forEach(a=>a.classList.remove('active'));
@@ -1037,7 +1037,7 @@ function switchPage(id) {
 }
 
 document.querySelectorAll('.nl').forEach(a => {
-  a.addEventListener('click', e => { e.preventDefault(); switchPage(a.dataset.p); });
+  a.addEventListener('click', e => { e.preventDefault(); window.switchPage(a.dataset.p); });
 });
 
 // ── ADMIN ─────────────────────────────────────────────────

@@ -1070,24 +1070,11 @@ document.querySelectorAll('.dn').forEach(a => {
 document.querySelectorAll('.mnt').forEach(a => {
   a.addEventListener('click', e => {
     e.preventDefault();
-    switchPage(a.dataset.p);
+    window.switchPage(a.dataset.p);
     document.querySelectorAll('.mnt').forEach(t => t.classList.remove('active'));
     a.classList.add('active');
   });
 });
-
-// sync mobile tab with desktop nav
-const origSwitch = switchPage;
-function switchPage(id) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nl').forEach(a=>a.classList.remove('active'));
-  const nl = document.querySelector(`.nl[data-p="${id}"]`);
-  if(nl) nl.classList.add('active');
-  document.querySelectorAll('.mnt').forEach(a=>a.classList.remove('active'));
-  const mnt = document.querySelector(`.mnt[data-p="${id}"]`);
-  if(mnt) mnt.classList.add('active');
-}
 
 // ── SORT ──────────────────────────────────────────────────
 let currentSort = 'default';
@@ -1321,12 +1308,13 @@ loadStyles();
   }
 
   // 페이지 전환시 이벤트 로드
-  const _origSwitchForEvent = window.switchPage;
-  window.switchPage = function(id) {
-    _origSwitchForEvent(id);
-    if (id === 'events') loadEvents();
-    if (id === 'admin') { loadEvents(); loadAdminEvents(); }
-  }
+  document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
+    a.addEventListener('click', () => {
+      const id = a.dataset.p;
+      if (id === 'events') setTimeout(loadEvents, 200);
+      if (id === 'admin') setTimeout(() => { loadAdminEvents(); }, 200);
+    });
+  });
 
   // 초기 로드
   loadEvents();
@@ -1470,13 +1458,11 @@ function filterMapTag(el, tag) {
 }
 
 // 페이지 전환시 지도 초기화
-const _origSwitchPage = switchPage;
-function switchPage(id) {
-  _origSwitchPage(id);
-  if (id === 'map' && !kakaoMap) {
-    setTimeout(initMap, 100);
-  }
-}
+document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
+  a.addEventListener('click', () => {
+    if (a.dataset.p === 'map' && !kakaoMap) setTimeout(initMap, 200);
+  });
+});
 
 // shops 로드 후 지도 데이터 세팅
 const _origLoadShops = loadShops;

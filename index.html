@@ -35,11 +35,12 @@ nav {
   background:rgba(244,239,230,.92);
   backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
+  gap:2rem;
 }
 .logo { font-family:'Playfair Display',serif; font-size:1.45rem; letter-spacing:.18em; color:var(--ink); text-decoration:none; }
 .logo em { font-style:italic; color:var(--rust); }
-.nav-links { display:flex; gap:2.5rem; list-style:none; }
-.nav-links a { font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; color:var(--sepia); text-decoration:none; transition:color .2s; }
+.nav-links { display:flex; gap:1.5rem; list-style:none; }
+.nav-links a { font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--sepia); text-decoration:none; transition:color .2s; font-family:'DM Sans',sans-serif; }
 .nav-links a:hover, .nav-links a.active { color:var(--ink); }
 .nav-cta { display:flex; gap:.75rem; }
 .btn { padding:.42rem 1.1rem; font-family:'DM Sans',sans-serif; font-size:.78rem; letter-spacing:.08em; cursor:pointer; transition:all .2s; border:1px solid var(--border); background:transparent; color:var(--ink); }
@@ -375,6 +376,41 @@ nav {
 .mobile-tab a svg { transition:stroke .2s; }
 .mobile-tab a.active svg { stroke:var(--ink); }
 
+
+/* ── EVENT SECTION ── */
+.event-section { max-width:1100px; margin:0 auto; padding:2rem 3rem 0; }
+.event-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
+.event-section-header h2 { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:400; }
+.event-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); max-width:1100px; margin:0 auto; }
+.event-card { background:var(--warm); position:relative; overflow:hidden; transition:background .18s; }
+.event-card:hover { background:var(--cream); }
+.event-card-inner { padding:1.5rem; }
+@media (max-width:768px) { .event-grid { grid-template-columns:1fr; } .event-section { padding:1.5rem 1.25rem 0; } }
+
+/* ── EVENT MODAL ── */
+.event-modal-overlay { display:none; position:fixed; inset:0; z-index:600; background:rgba(24,20,15,.6); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+.event-modal-overlay.open { display:flex; }
+.event-modal { background:var(--warm); width:90%; max-width:520px; max-height:88vh; overflow-y:auto; border:1px solid var(--border); }
+.event-modal-header { display:flex; justify-content:space-between; align-items:center; padding:1.25rem 1.5rem; border-bottom:1px solid var(--border); }
+.event-modal-header h3 { font-family:'Playfair Display',serif; font-size:1.1rem; }
+.event-modal-body { padding:1.5rem; }
+.form-group { margin-bottom:1rem; }
+.form-group label { display:block; font-size:.78rem; color:var(--sepia); letter-spacing:.06em; text-transform:uppercase; margin-bottom:.4rem; }
+.form-group input, .form-group textarea, .form-group select { width:100%; padding:.7rem 1rem; border:1px solid var(--border); background:var(--cream); font-family:'DM Sans',sans-serif; font-size:.88rem; color:var(--ink); outline:none; }
+.form-group textarea { resize:none; min-height:80px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.form-divider { font-size:.75rem; color:var(--dusty); text-align:center; margin:.75rem 0; letter-spacing:.08em; }
+
+/* ── SORT BUTTONS ── */
+.sort-btn {
+  padding:.35rem .95rem; border:1px solid var(--border); background:transparent;
+  font-size:.76rem; letter-spacing:.06em; color:var(--sepia);
+  cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif;
+}
+.sort-btn:hover, .sort-btn.on {
+  background:var(--ink); color:var(--cream); border-color:var(--ink);
+}
+
 /* loading */
 .loading { text-align:center; padding:3rem; color:var(--dusty); font-family:'IM Fell English',serif; font-style:italic; }
 
@@ -390,7 +426,9 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <li><a href="#" class="nl active" data-p="discover">큐레이션</a></li>
     <li><a href="#" class="nl" data-p="explore">스타일 탐색</a></li>
     <li><a href="#" class="nl" data-p="community">커뮤니티</a></li>
-    <li><a href="#" class="nl" data-p="admin">관리자 ✦</a></li>
+    <li><a href="#" class="nl" data-p="events">이벤트</a></li>
+    <li><a href="#" class="nl" data-p="map">지도</a></li>
+    <li><a href="#" class="nl" data-p="admin">관리자</a></li>
   </ul>
   <button class="hamburger" onclick="toggleMenu()" aria-label="메뉴">
     <span></span><span></span><span></span>
@@ -421,6 +459,14 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
       <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
       커뮤니티
     </a>
+    <a href="#" class="drawer-link dn" data-p="events">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+      이벤트
+    </a>
+    <a href="#" class="drawer-link dn" data-p="map">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+      지도
+    </a>
     <a href="#" class="drawer-link dn" data-p="admin">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
       관리자
@@ -450,6 +496,14 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     커뮤니티
   </a>
+  <a href="#" class="mnt" data-p="events">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    이벤트
+  </a>
+  <a href="#" class="mnt" data-p="map">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    지도
+  </a>
   <a href="#" class="mnt" data-p="admin">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
     관리자
@@ -468,9 +522,30 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     </div>
     <div class="tags" id="tagRow"></div>
   </div>
+
+  <!-- 이벤트 미리보기 섹션 -->
+  <div id="eventSection" style="display:none;">
+    <div class="event-section">
+      <div class="event-section-header">
+        <h2>진행 중인 <em style="font-style:italic;color:var(--rust);">이벤트 · 세일</em></h2>
+        <a href="#" class="card-link" onclick="switchPage('events');return false;">전체 보기 →</a>
+      </div>
+    </div>
+    <div class="event-grid" id="eventPreview" style="max-width:1100px;margin:0 auto;"></div>
+    <div style="max-width:1100px;margin:.75rem auto 0;padding:0 3rem;">
+      <button onclick="openEventModal()" style="font-size:.78rem;color:var(--sepia);background:none;border:1px solid var(--border);padding:.4rem 1rem;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 이벤트 신청하기</button>
+    </div>
+    <div style="height:2rem;"></div>
+  </div>
+
   <div class="results-bar">
     <h2 id="resTitle">전체 브랜드 · 편집샵</h2>
     <small id="resCnt">불러오는 중...</small>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;padding:.75rem 3rem;display:flex;gap:.5rem;border-bottom:1px solid var(--border);">
+    <button class="sort-btn on" onclick="sortShops(this,'default')">기본</button>
+    <button class="sort-btn" onclick="sortShops(this,'name')">가나다순</button>
+    <button class="sort-btn" onclick="sortShops(this,'type')">유형별</button>
   </div>
   <div class="brand-grid" id="grid">
     <div class="loading" style="grid-column:1/-1">스프레드시트에서 데이터를 불러오는 중...</div>
@@ -606,6 +681,110 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
   </div>
 </div>
 
+
+
+<!-- ══════════ EVENTS ══════════ -->
+<div id="events" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:2.5rem 3rem 1.5rem;display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.88rem;color:var(--rust);margin-bottom:.5rem;">한정 기간 혜택</p>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;">이벤트 · <em style="font-style:italic;color:var(--rust);">세일</em></h2>
+    </div>
+    <button onclick="openEventModal()" class="btn fill">+ 이벤트 신청</button>
+  </div>
+  <div class="event-grid" id="eventGrid" style="max-width:1100px;margin:0 auto;"></div>
+  <footer><p></p><p>FILAMENT © 2025</p></footer>
+</div>
+
+<!-- 이벤트 신청 모달 -->
+<div class="event-modal-overlay" id="eventModal">
+  <div class="event-modal">
+    <div class="event-modal-header">
+      <h3>이벤트 · 세일 신청</h3>
+      <button onclick="closeEventModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--sepia);">✕</button>
+    </div>
+    <div class="event-modal-body">
+      <form id="eventForm">
+        <div class="form-group">
+          <label>가게명 *</label>
+          <input type="text" id="modalShopName" placeholder="브랜드 또는 편집샵 이름">
+        </div>
+        <div class="form-group">
+          <label>이벤트 유형 *</label>
+          <select id="modalType">
+            <option value="세일">세일</option>
+            <option value="팝업">팝업</option>
+            <option value="이벤트">이벤트</option>
+            <option value="할인">할인</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>이벤트 제목 *</label>
+          <input type="text" id="modalTitle" placeholder="예: 여름 시즌 오프 세일 30%">
+        </div>
+        <div class="form-group">
+          <label>상세 내용</label>
+          <textarea id="modalDesc" placeholder="이벤트 내용을 자세히 설명해주세요"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>시작일 *</label>
+            <input type="date" id="modalStart">
+          </div>
+          <div class="form-group">
+            <label>종료일 *</label>
+            <input type="date" id="modalEnd">
+          </div>
+        </div>
+        <div class="form-divider">— 오프라인 / 온라인 / 둘 다 —</div>
+        <div class="form-group">
+          <label>오프라인 주소</label>
+          <input type="text" id="modalAddress" placeholder="예: 서울 마포구 홍익로 00길 00">
+        </div>
+        <div class="form-group">
+          <label>온라인 링크</label>
+          <input type="url" id="modalLink" placeholder="https://...">
+        </div>
+        <button type="button" onclick="submitEvent()" class="btn fill" style="width:100%;margin-top:.5rem;padding:.75rem;">관리자에게 신청하기</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MAP ══════════ -->
+<div id="map" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:2rem 3rem 1rem;">
+    <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.88rem;color:var(--rust);margin-bottom:.5rem;">지도로 찾기</p>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:1.5rem;">내 주변 <em style="font-style:italic;color:var(--rust)">스타일샵</em></h2>
+
+    <!-- 검색/필터 -->
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <div style="display:flex;flex:1;min-width:200px;border:1px solid var(--border);background:var(--warm);">
+        <input id="mapSearchInput" type="text" placeholder="지역 검색 (예: 마포구, 이태원...)"
+          style="flex:1;padding:.75rem 1rem;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);outline:none;">
+        <button onclick="searchMapArea()" style="padding:0 1rem;background:var(--ink);border:none;color:var(--cream);font-size:.78rem;cursor:pointer;">검색</button>
+      </div>
+    </div>
+
+    <!-- 태그 필터 -->
+    <div id="mapTagRow" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.25rem;"></div>
+  </div>
+
+  <!-- 지도 + 사이드패널 -->
+  <div style="display:grid;grid-template-columns:1fr 320px;max-width:1100px;margin:0 auto;padding:0 3rem;gap:1px;background:var(--border);">
+    <div id="kakaoMap" style="height:520px;background:var(--border);"></div>
+    <div id="mapPanel" style="background:var(--warm);overflow-y:auto;height:520px;padding:1rem;">
+      <p style="font-size:.82rem;color:var(--dusty);font-family:'IM Fell English',serif;font-style:italic;text-align:center;margin-top:2rem;">핀을 클릭하면<br>가게 정보가 표시됩니다</p>
+    </div>
+  </div>
+
+  <!-- 가게 목록 -->
+  <div id="mapShopList" style="max-width:1100px;margin:1px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);"></div>
+
+  <footer style="max-width:1100px;margin:0 auto;"><p></p><p>FILAMENT © 2025</p></footer>
+</div>
+
 <!-- ══════════ ADMIN ══════════ -->
 <div id="admin" class="page">
   <div class="admin-wrap">
@@ -648,6 +827,10 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
         <button class="act-no" onclick="reject('b2','ra2')">✗ 반려</button>
         <button class="act-edit">수정 요청</button>
       </div>
+    </div>
+    <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;margin-bottom:1rem;">이벤트 · 세일 신청 검수</h3>
+      <div id="adminEventList"><p style="font-size:.85rem;color:var(--dusty);">불러오는 중...</p></div>
     </div>
     <p style="font-size:.78rem;color:var(--dusty);margin-top:1.5rem;font-family:'IM Fell English',serif;font-style:italic;">검수 기준: 스타일 일치도 · 제품 실존 여부 · 카테고리 어뷰징 여부</p>
   </div>
@@ -740,7 +923,7 @@ function renderShops(list) {
         <div class="card-top">
           <div class="card-initial" style="${logo ? 'background:white;padding:0;overflow:hidden;' : ''}">
             ${logo
-              ? `<img src="${logo}" alt="${s['가게명']}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentNode.innerHTML='${initial}';this.parentNode.style=''">`
+              ? `<img src="${logo}" alt="${s['가게명']}" loading="lazy" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentNode.innerHTML='${initial}';this.parentNode.style=''">`
               : initial
             }
           </div>
@@ -794,7 +977,7 @@ function renderStyleGrid() {
     return;
   }
   grid.innerHTML = styles.map((s,i) => {
-    const thumb = s['사진링크1'] ? `<img src="${driveThumb(s['사진링크1'])}" alt="${s['스타일명']}" onerror="this.parentNode.innerHTML='<div class=style-thumb-placeholder>👗</div>'">` : `<div class="style-thumb-placeholder">👗</div>`;
+    const thumb = s['사진링크1'] ? `<img src="${driveThumb(s['사진링크1'])}" alt="${s['스타일명']}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=style-thumb-placeholder>👗</div>'">` : `<div class="style-thumb-placeholder">👗</div>`;
     return `
       <div class="style-card" onclick="openStyle(${i})">
         <div class="style-thumb">${thumb}</div>
@@ -823,7 +1006,7 @@ function openStyle(i) {
   const photos = ['사진링크1','사진링크2','사진링크3'].map(k => {
     const url = currentStyle[k];
     if(!url) return `<div class="overlay-photo"><div class="overlay-photo-placeholder">📷</div></div>`;
-    return `<div class="overlay-photo"><img src="${driveThumb(url)}" onerror="this.parentNode.innerHTML='<div class=overlay-photo-placeholder>📷</div>'"></div>`;
+    return `<div class="overlay-photo"><img src="${driveThumb(url)}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=overlay-photo-placeholder>📷</div>'"></div>`;
   });
   document.getElementById('ovPhotos').innerHTML = photos.join('');
   document.getElementById('overlay').classList.add('open');
@@ -906,9 +1089,405 @@ function switchPage(id) {
   if(mnt) mnt.classList.add('active');
 }
 
+// ── SORT ──────────────────────────────────────────────────
+let currentSort = 'default';
+let currentList = [];
+
+function sortShops(el, type) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  currentSort = type;
+  let list = [...currentList];
+  if (type === 'name') {
+    list.sort((a, b) => (a['가게명']||'').localeCompare(b['가게명']||'', 'ko'));
+  } else if (type === 'type') {
+    list.sort((a, b) => (a['유형']||'').localeCompare(b['유형']||'', 'ko'));
+  }
+  renderShops(list);
+}
+
+const _origRenderShops = renderShops;
+function renderShops(list) {
+  currentList = list;
+  let sorted = [...list];
+  if (currentSort === 'name') {
+    sorted.sort((a, b) => (a['가게명']||'').localeCompare(b['가게명']||'', 'ko'));
+  } else if (currentSort === 'type') {
+    sorted.sort((a, b) => (a['유형']||'').localeCompare(b['유형']||'', 'ko'));
+  }
+  _origRenderShops(sorted);
+}
+
 // ── INIT ──────────────────────────────────────────────────
 loadShops();
 loadStyles();
 </script>
+
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsN9gBDRIxymWLTSsBZGOBoNvChKsiCaI",
+    authDomain: "filament-752a8.firebaseapp.com",
+    projectId: "filament-752a8",
+    storageBucket: "filament-752a8.firebasestorage.app",
+    messagingSenderId: "467566783358",
+    appId: "1:467566783358:web:01523cd2e9e43acda5612f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ── 이벤트 불러오기 ──────────────────────────────────────
+  async function loadEvents() {
+    try {
+      const now = Timestamp.now();
+      const q = query(
+        collection(db, 'events'),
+        where('status', '==', 'approved'),
+        where('endDate', '>=', now),
+        orderBy('endDate')
+      );
+      const snapshot = await getDocs(q);
+      const events = [];
+      snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+      renderEvents(events);
+      renderEventPreview(events);
+    } catch(e) {
+      console.error('이벤트 로드 실패:', e);
+    }
+  }
+
+  // ── 이벤트 미리보기 (큐레이션 페이지 3개) ─────────────────
+  function renderEventPreview(events) {
+    const preview = document.getElementById('eventPreview');
+    if (!preview) return;
+    const top3 = events.slice(0, 3);
+    if (!top3.length) {
+      preview.style.display = 'none';
+      document.getElementById('eventSection').style.display = 'none';
+      return;
+    }
+    document.getElementById('eventSection').style.display = 'block';
+    preview.innerHTML = top3.map(e => renderEventCard(e)).join('');
+  }
+
+  // ── 전체 이벤트 탭 ────────────────────────────────────────
+  function renderEvents(events) {
+    const grid = document.getElementById('eventGrid');
+    if (!grid) return;
+    if (!events.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">진행 중인 이벤트가 없습니다.</div>';
+      return;
+    }
+    grid.innerHTML = events.map(e => renderEventCard(e)).join('');
+  }
+
+  function renderEventCard(e) {
+    const start = e.startDate?.toDate?.()?.toLocaleDateString('ko-KR') || '';
+    const end = e.endDate?.toDate?.()?.toLocaleDateString('ko-KR') || '';
+    const dday = Math.ceil((e.endDate?.toDate() - new Date()) / (1000*60*60*24));
+    return `
+      <div class="event-card" onmouseenter="this.querySelector('.event-hidden').style.opacity='1'" onmouseleave="this.querySelector('.event-hidden').style.opacity='0'">
+        <div class="event-card-inner">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
+            <span class="card-type" style="color:var(--rust);border-color:var(--rust);">${e.type || '이벤트'}</span>
+            <span style="font-size:.72rem;color:var(--rust);font-weight:500;">D-${dday}</span>
+          </div>
+          <div class="card-name" style="font-size:1.05rem;margin-bottom:.4rem;">${e.shopName || ''}</div>
+          <div style="font-size:.9rem;font-weight:500;color:var(--ink);margin-bottom:.5rem;">${e.title || ''}</div>
+          <div style="font-size:.78rem;color:var(--sepia);margin-bottom:.75rem;line-height:1.5;">${e.description || ''}</div>
+          <div style="font-size:.72rem;color:var(--dusty);">📅 ${start} ~ ${end}</div>
+          ${e.address ? `<div style="font-size:.72rem;color:var(--sepia);margin-top:.35rem;">📍 ${e.address}</div>` : ''}
+          ${e.link ? `<a href="${e.link}" target="_blank" class="card-link" style="font-size:.75rem;margin-top:.5rem;display:inline-block;">온라인 바로가기 →</a>` : ''}
+        </div>
+        <div class="event-hidden" style="opacity:0;transition:opacity .2s;position:absolute;bottom:0;left:0;right:0;padding:.75rem;background:var(--ink);display:flex;gap:.5rem;">
+          <button onclick="openEventModal('${e.shopName || ''}')" style="flex:1;padding:.4rem;background:transparent;border:1px solid var(--cream);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer;">이벤트 신청</button>
+        </div>
+      </div>`;
+  }
+
+  // ── 이벤트 신청 모달 ──────────────────────────────────────
+  window.openEventModal = function(shopName = '') {
+    document.getElementById('modalShopName').value = shopName;
+    document.getElementById('eventModal').classList.add('open');
+  }
+
+  window.closeEventModal = function() {
+    document.getElementById('eventModal').classList.remove('open');
+    document.getElementById('eventForm').reset();
+  }
+
+  window.submitEvent = async function() {
+    const shopName = document.getElementById('modalShopName').value.trim();
+    const title = document.getElementById('modalTitle').value.trim();
+    const description = document.getElementById('modalDesc').value.trim();
+    const type = document.getElementById('modalType').value;
+    const startDate = document.getElementById('modalStart').value;
+    const endDate = document.getElementById('modalEnd').value;
+    const address = document.getElementById('modalAddress').value.trim();
+    const link = document.getElementById('modalLink').value.trim();
+
+    if (!shopName || !title || !startDate || !endDate) {
+      alert('가게명, 제목, 기간은 필수 입력 항목입니다.');
+      return;
+    }
+    if (!address && !link) {
+      alert('오프라인 주소 또는 온라인 링크 중 하나는 입력해주세요.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 'events'), {
+        shopName, title, description, type,
+        startDate: Timestamp.fromDate(new Date(startDate)),
+        endDate: Timestamp.fromDate(new Date(endDate)),
+        address, link,
+        status: 'pending',
+        createdAt: Timestamp.now()
+      });
+      alert('이벤트 신청이 완료됐습니다! 관리자 검토 후 게시됩니다.');
+      closeEventModal();
+      loadEvents();
+    } catch(e) {
+      alert('신청 중 오류가 발생했습니다.');
+      console.error(e);
+    }
+  }
+
+  // ── 관리자: 이벤트 목록 불러오기 ─────────────────────────
+  async function loadAdminEvents() {
+    try {
+      const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      const events = [];
+      snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+      renderAdminEvents(events);
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function renderAdminEvents(events) {
+    const container = document.getElementById('adminEventList');
+    if (!container) return;
+    if (!events.length) {
+      container.innerHTML = '<p style="font-size:.85rem;color:var(--dusty);">신청된 이벤트가 없습니다.</p>';
+      return;
+    }
+    container.innerHTML = events.map(e => {
+      const statusLabel = e.status === 'approved' ? '승인' : e.status === 'rejected' ? '반려' : '대기';
+      const statusClass = e.status === 'approved' ? 'ok' : e.status === 'rejected' ? 'no' : 'pending';
+      return `
+        <div class="review" style="margin-bottom:1px;">
+          <div class="review-top">
+            <div><h4>${e.shopName} — ${e.title}</h4><span>${e.startDate?.toDate?.()?.toLocaleDateString('ko-KR')} ~ ${e.endDate?.toDate?.()?.toLocaleDateString('ko-KR')}</span></div>
+            <span class="badge ${statusClass}" id="eb-${e.id}">${statusLabel}</span>
+          </div>
+          <div class="review-body">
+            <p>${e.description || ''}</p>
+            ${e.address ? `<div style="font-size:.8rem;color:var(--sepia);">📍 ${e.address}</div>` : ''}
+            ${e.link ? `<div style="font-size:.8rem;color:var(--sepia);">🔗 ${e.link}</div>` : ''}
+          </div>
+          <div class="review-acts" id="era-${e.id}">
+            ${e.status === 'pending' ? `
+              <button class="act-ok" onclick="approveEvent('${e.id}')">✓ 승인</button>
+              <button class="act-no" onclick="rejectEvent('${e.id}')">✗ 반려</button>
+            ` : `<span style="font-size:.82rem;color:var(--dusty);">${statusLabel} 처리됨</span>`}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── 관리자: 승인/반려 ─────────────────────────────────────
+  const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+  window.approveEvent = async function(id) {
+    await updateDoc(doc(db, 'events', id), { status: 'approved' });
+    document.getElementById('eb-' + id).className = 'badge ok';
+    document.getElementById('eb-' + id).textContent = '승인';
+    document.getElementById('era-' + id).innerHTML = '<span style="font-size:.82rem;color:#2E6E45;">✓ 승인 처리되었습니다</span>';
+    loadEvents();
+  }
+
+  window.rejectEvent = async function(id) {
+    await updateDoc(doc(db, 'events', id), { status: 'rejected' });
+    document.getElementById('eb-' + id).className = 'badge no';
+    document.getElementById('eb-' + id).textContent = '반려';
+    document.getElementById('era-' + id).innerHTML = '<span style="font-size:.82rem;color:#8B2018;">✗ 반려 처리되었습니다</span>';
+  }
+
+  // 페이지 전환시 이벤트 로드
+  const _origSwitchForEvent = window.switchPage;
+  window.switchPage = function(id) {
+    _origSwitchForEvent(id);
+    if (id === 'events') loadEvents();
+    if (id === 'admin') { loadEvents(); loadAdminEvents(); }
+  }
+
+  // 초기 로드
+  loadEvents();
+</script>
+
+<!-- 카카오맵 SDK -->
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services"></script>
+
+<script>
+// ── MAP ───────────────────────────────────────────────
+let kakaoMap = null;
+let mapMarkers = [];
+let mapShops = [];
+let activeMapTag = '';
+let geocoder = null;
+
+function initMap() {
+  if (!document.getElementById('kakaoMap')) return;
+  const container = document.getElementById('kakaoMap');
+  const options = {
+    center: new kakao.maps.LatLng(37.5563, 126.9236),
+    level: 5
+  };
+  kakaoMap = new kakao.maps.Map(container, options);
+  geocoder = new kakao.maps.services.Geocoder();
+  renderMapShops(mapShops);
+}
+
+function renderMapShops(list) {
+  // 기존 마커 제거
+  mapMarkers.forEach(m => m.setMap(null));
+  mapMarkers = [];
+
+  const shopList = document.getElementById('mapShopList');
+  if (!shopList) return;
+
+  const filtered = activeMapTag
+    ? list.filter(s => (s['태그']||'').split(',').map(t=>t.trim()).includes(activeMapTag))
+    : list;
+
+  shopList.innerHTML = filtered.map(s => {
+    const tags = (s['태그']||'').split(',').map(t=>t.trim()).filter(Boolean);
+    return `
+      <div class="brand-card" onclick="focusShop('${(s['링크2']||'').replace(/'/g,"\'")}','${(s['가게명']||'').replace(/'/g,"\'")}')">
+        <div class="card-top">
+          <div class="card-initial">${(s['가게명']||'?')[0]}</div>
+          <span class="card-type">${s['유형']||'브랜드'}</span>
+        </div>
+        <div class="card-name">${s['가게명']||''}</div>
+        <div class="card-tags">${tags.map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+        ${s['링크2'] ? `<div style="font-size:.75rem;color:var(--sepia);margin-top:.5rem;">📍 ${s['링크2']}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  // 마커 찍기
+  filtered.forEach(s => {
+    if (!s['링크2'] || !geocoder) return;
+    geocoder.addressSearch(s['링크2'], function(result, status) {
+      if (status === kakao.maps.services.Status.OK) {
+        const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+        const marker = new kakao.maps.Marker({ map: kakaoMap, position: coords, title: s['가게명'] });
+        const infowindow = new kakao.maps.InfoWindow({
+          content: `<div style="padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;min-width:120px;">
+            <b>${s['가게명']}</b><br>
+            <span style="color:#6B5C46;font-size:11px;">${s['태그']||''}</span>
+          </div>`
+        });
+        kakao.maps.event.addListener(marker, 'click', function() {
+          infowindow.open(kakaoMap, marker);
+          showMapPanel(s);
+        });
+        mapMarkers.push(marker);
+      }
+    });
+  });
+
+  document.getElementById('mapShopList').style.display = filtered.length ? 'grid' : 'none';
+}
+
+function showMapPanel(s) {
+  const panel = document.getElementById('mapPanel');
+  const tags = (s['태그']||'').split(',').map(t=>t.trim()).filter(Boolean);
+  panel.innerHTML = `
+    <div style="border-bottom:1px solid var(--border);padding-bottom:1rem;margin-bottom:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
+        <div class="card-initial">${(s['가게명']||'?')[0]}</div>
+        <span class="card-type">${s['유형']||'브랜드'}</span>
+      </div>
+      <div class="card-name" style="font-size:1.1rem;margin-bottom:.5rem;">${s['가게명']||''}</div>
+      <div class="card-tags" style="margin-bottom:.75rem;">${tags.map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+      ${s['링크2'] ? `<div style="font-size:.78rem;color:var(--sepia);margin-bottom:.75rem;">📍 ${s['링크2']}</div>` : ''}
+      ${s['링크'] ? `<a href="${s['링크']}" target="_blank" class="card-link">${s['링크이름']||'홈페이지'}</a>` : ''}
+    </div>
+    <button onclick="document.getElementById('mapPanel').innerHTML='<p style=\'font-size:.82rem;color:var(--dusty);font-family:IM Fell English,serif;font-style:italic;text-align:center;margin-top:2rem;\'>핀을 클릭하면<br>가게 정보가 표시됩니다</p>'"
+      style="font-size:.75rem;color:var(--dusty);background:none;border:none;cursor:pointer;">✕ 닫기</button>
+  `;
+}
+
+function focusShop(addr, name) {
+  if (!geocoder || !addr) return;
+  geocoder.addressSearch(addr, function(result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+      kakaoMap.setCenter(coords);
+      kakaoMap.setLevel(3);
+    }
+  });
+}
+
+function searchMapArea() {
+  const q = document.getElementById('mapSearchInput').value.trim();
+  if (!q || !geocoder) return;
+  geocoder.addressSearch(q, function(result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+      kakaoMap.setCenter(coords);
+      kakaoMap.setLevel(5);
+      // 해당 지역 가게만 필터
+      const filtered = mapShops.filter(s => (s['링크2']||'').includes(q));
+      renderMapShops(filtered.length ? filtered : mapShops);
+    }
+  });
+}
+
+document.getElementById('mapSearchInput') && document.getElementById('mapSearchInput').addEventListener('keydown', e => {
+  if(e.key==='Enter') searchMapArea();
+});
+
+function renderMapTagRow(tags) {
+  const row = document.getElementById('mapTagRow');
+  if (!row) return;
+  row.innerHTML = `<button class="tag on" onclick="filterMapTag(this,'')">전체</button>` +
+    tags.map(t=>`<button class="tag" onclick="filterMapTag(this,'${t}')">${t}</button>`).join('');
+}
+
+function filterMapTag(el, tag) {
+  document.querySelectorAll('#mapTagRow .tag').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  activeMapTag = tag;
+  renderMapShops(mapShops);
+}
+
+// 페이지 전환시 지도 초기화
+const _origSwitchPage = switchPage;
+function switchPage(id) {
+  _origSwitchPage(id);
+  if (id === 'map' && !kakaoMap) {
+    setTimeout(initMap, 100);
+  }
+}
+
+// shops 로드 후 지도 데이터 세팅
+const _origLoadShops = loadShops;
+async function loadShops() {
+  await _origLoadShops();
+  mapShops = shops;
+  const tagSet = new Set();
+  shops.forEach(s => (s['태그']||'').split(',').forEach(t => t.trim() && tagSet.add(t.trim())));
+  renderMapTagRow([...tagSet]);
+}
+</script>
+
 </body>
 </html>

@@ -887,6 +887,9 @@ async function loadShops() {
     renderTagRow();
     renderShops(shops);
     document.getElementById('resCnt').textContent = shops.length + '개 브랜드·편집샵';
+    // 지도 데이터 세팅
+    mapShops = shops;
+    renderMapTagRow([...tagSet]);
   } catch(e) {
     document.getElementById('grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1">⚠ 데이터를 불러오지 못했습니다.<br><small>스프레드시트 공유 설정을 확인해 주세요.</small></div>`;
     document.getElementById('resCnt').textContent = '오류';
@@ -1464,15 +1467,7 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
   });
 });
 
-// shops 로드 후 지도 데이터 세팅
-const _origLoadShops = loadShops;
-async function loadShops() {
-  await _origLoadShops();
-  mapShops = shops;
-  const tagSet = new Set();
-  shops.forEach(s => (s['태그']||'').split(',').forEach(t => t.trim() && tagSet.add(t.trim())));
-  renderMapTagRow([...tagSet]);
-}
+// shops 로드 후 지도 데이터 세팅 - 기존 loadShops에 통합됨
 </script>
 
 </body>

@@ -885,7 +885,7 @@ async function loadShops() {
     });
     allTags = [...tagSet];
     renderTagRow();
-    renderShops(shops);
+    sortAndRender(shops);
     document.getElementById('resCnt').textContent = shops.length + '개 브랜드·편집샵';
     // 지도 데이터 세팅
     mapShops = shops;
@@ -1087,17 +1087,11 @@ function sortShops(el, type) {
   document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
   currentSort = type;
-  let list = [...currentList];
-  if (type === 'name') {
-    list.sort((a, b) => (a['가게명']||'').localeCompare(b['가게명']||'', 'ko'));
-  } else if (type === 'type') {
-    list.sort((a, b) => (a['유형']||'').localeCompare(b['유형']||'', 'ko'));
-  }
-  renderShops(list);
+  sortAndRender(currentList);
 }
 
-const _origRenderShops = renderShops;
-function renderShops(list) {
+// 정렬 적용해서 렌더링
+function sortAndRender(list) {
   currentList = list;
   let sorted = [...list];
   if (currentSort === 'name') {
@@ -1105,7 +1099,7 @@ function renderShops(list) {
   } else if (currentSort === 'type') {
     sorted.sort((a, b) => (a['유형']||'').localeCompare(b['유형']||'', 'ko'));
   }
-  _origRenderShops(sorted);
+  renderShops(sorted);
 }
 
 // ── INIT ──────────────────────────────────────────────────

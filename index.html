@@ -1423,6 +1423,21 @@ loadStyles();
   </div>
 </div>
 
+<!-- 모달 제어 스크립트 (일반 스크립트) -->
+<script>
+function openAuthModal() {
+  if (window._currentUser) { window.switchPage('mypage'); return; }
+  var modal = document.getElementById('authModal');
+  modal.style.display = 'flex';
+  modal.classList.add('open');
+}
+function closeAuthModal() {
+  var modal = document.getElementById('authModal');
+  modal.classList.remove('open');
+  modal.style.display = 'none';
+}
+</script>
+
 <!-- 마이페이지 -->
 <div id="mypage" class="page">
   <div class="mypage-wrap">
@@ -1769,19 +1784,7 @@ function filterMapTag(el, tag) {
     if (wrap && !wrap.contains(e.target)) closeUserDropdown();
   });
 
-  // ── 모달 ─────────────────────────────────────────────────
-  window.openAuthModal = function() {
-    if (currentUser) { window.switchPage('mypage'); return; }
-    const modal = document.getElementById('authModal');
-    modal.style.display = 'flex';
-    modal.classList.add('open');
-  }
-  window.closeAuthModal = function() {
-    const modal = document.getElementById('authModal');
-    modal.classList.remove('open');
-    modal.style.display = 'none';
-  }
-
+  // 모달 함수는 외부 스크립트에서 정의됨
   document.getElementById('authModal').addEventListener('click', e => {
     if (e.target === document.getElementById('authModal')) window.closeAuthModal();
   });
@@ -1797,8 +1800,8 @@ function filterMapTag(el, tag) {
   window.switchPage = function(id) {
     _base(id);
     // 지도 초기화
-    if (id === 'map' && typeof kakaoMap !== 'undefined' && !kakaoMap) {
-      setTimeout(function(){ if(typeof initMap === 'function') initMap(); }, 200);
+    if (id === 'map') {
+      setTimeout(function(){ if(typeof initMap === 'function' && !window.kakaoMap) initMap(); }, 200);
     }
     // 이벤트 로드
     if (id === 'events' && typeof loadEvents === 'function') setTimeout(loadEvents, 200);

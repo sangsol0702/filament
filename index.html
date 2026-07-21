@@ -502,8 +502,19 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
 </head>
 <body>
 
+<script>
+function openAuthModal() {
+  if (window._currentUser) { window.switchPage('mypage'); return; }
+  var modal = document.getElementById('authModal');
+  if(modal) { modal.style.display='flex'; modal.classList.add('open'); }
+}
+function closeAuthModal() {
+  var modal = document.getElementById('authModal');
+  if(modal) { modal.classList.remove('open'); modal.style.display='none'; }
+}
+</script>
 <nav>
-  <a class="logo" href="#">FIL<em>A</em>MENT</a>
+  <a class="logo" href="#" onclick="window.switchPage('discover');return false;">FIL<em>A</em>MENT</a>
   <ul class="nav-links">
     <li><a href="#" class="nl active" data-p="discover">큐레이션</a></li>
     <li><a href="#" class="nl" data-p="explore">스타일 탐색</a></li>
@@ -1131,15 +1142,30 @@ document.getElementById('overlay').addEventListener('click', e => {
 });
 
 // ── NAV ──────────────────────────────────────────────────
-window.switchPage = function switchPage(id) {
+window.switchPage = function(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nl').forEach(a=>a.classList.remove('active'));
-  document.querySelector(`.nl[data-p="${id}"]`).classList.add('active');
+  var target = document.getElementById(id);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nl,.dn,.mnt').forEach(a=>a.classList.remove('active'));
+  var active = document.querySelector('[data-p="'+id+'"]');
+  if(active) active.classList.add('active');
+
+  // 지도
+  if (id === 'map') {
+    setTimeout(function(){ if(typeof initMap==='function' && !kakaoMap) initMap(); }, 300);
+  }
+  // 이벤트
+  if (id === 'events' && typeof loadEvents==='function') setTimeout(loadEvents, 200);
+  // 관리자
+  if (id === 'admin' && typeof loadAdminEvents==='function') setTimeout(loadAdminEvents, 200);
+  // 마이페이지
+  if (id === 'mypage' && window._currentUser && typeof updateMypageUI==='function') {
+    setTimeout(function(){ updateMypageUI(window._currentUser, window._currentRole||'user'); }, 100);
+  }
 }
 
-document.querySelectorAll('.nl').forEach(a => {
-  a.addEventListener('click', e => { e.preventDefault(); window.switchPage(a.dataset.p); });
+document.querySelectorAll('.nl').forEach(function(a) {
+  a.addEventListener('click', function(e) { e.preventDefault(); window.switchPage(a.dataset.p); });
 });
 
 // ── ADMIN ─────────────────────────────────────────────────
@@ -1423,20 +1449,7 @@ loadStyles();
   </div>
 </div>
 
-<!-- 모달 제어 스크립트 (일반 스크립트) -->
-<script>
-function openAuthModal() {
-  if (window._currentUser) { window.switchPage('mypage'); return; }
-  var modal = document.getElementById('authModal');
-  modal.style.display = 'flex';
-  modal.classList.add('open');
-}
-function closeAuthModal() {
-  var modal = document.getElementById('authModal');
-  modal.classList.remove('open');
-  modal.style.display = 'none';
-}
-</script>
+
 
 <!-- 마이페이지 -->
 <div id="mypage" class="page">
@@ -1475,7 +1488,19 @@ function closeAuthModal() {
 </div>
 
 <!-- 카카오맵 SDK -->
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services"></script>
+<script>
+// 카카오맵 SDK 비동기 로드
+(function() {
+  var script = document.createElement("script");
+  script.src = "//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services&autoload=false";
+  script.onload = function() {
+    kakao.maps.load(function() {
+      window._kakaoReady = true;
+    });
+  };
+  document.head.appendChild(script);
+})();
+</script>
 
 <script>
 // ── MAP ───────────────────────────────────────────────
@@ -1487,6 +1512,9 @@ let geocoder = null;
 
 function initMap() {
   if (!document.getElementById('kakaoMap')) return;
+  if (!window._kakaoReady) {
+    setTimeout(initMap, 300); return;
+  }
   const container = document.getElementById('kakaoMap');
   const options = {
     center: new kakao.maps.LatLng(37.5563, 126.9236),
@@ -1793,29 +1821,7 @@ function filterMapTag(el, tag) {
 </script>
 
 
-<script>
-// ── 통합 switchPage 훅 ─────────────────────────────────
-(function() {
-  const _base = window.switchPage;
-  window.switchPage = function(id) {
-    _base(id);
-    // 지도 초기화
-    if (id === 'map') {
-      setTimeout(function(){ if(typeof initMap === 'function' && !window.kakaoMap) initMap(); }, 200);
-    }
-    // 이벤트 로드
-    if (id === 'events' && typeof loadEvents === 'function') setTimeout(loadEvents, 200);
-    if (id === 'admin' && typeof loadAdminEvents === 'function') setTimeout(loadAdminEvents, 200);
-    // 마이페이지 UI
-    if (id === 'mypage' && typeof updateMypageUI === 'function') {
-      setTimeout(function(){
-        var u = window._currentUser, r = window._currentRole;
-        if(u) updateMypageUI(u, r);
-      }, 100);
-    }
-  };
-})();
-</script>
+
 
 </body>
 </html>

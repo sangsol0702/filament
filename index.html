@@ -424,7 +424,7 @@ nav {
   background:rgba(24,20,15,.65); backdrop-filter:blur(4px);
   align-items:center; justify-content:center;
 }
-.auth-modal-overlay.open { display:flex; }
+.auth-modal-overlay.open { display:flex !important; }
 .auth-modal {
   background:var(--warm); width:90%; max-width:420px;
   border:1px solid var(--border); padding:2.5rem 2rem;
@@ -509,15 +509,14 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <li><a href="#" class="nl" data-p="community">커뮤니티</a></li>
     <li><a href="#" class="nl" data-p="events">이벤트</a></li>
     <li><a href="#" class="nl" data-p="map">지도</a></li>
-    <li><a href="#" class="nl" data-p="mypage" id="mypageNavLink" style="display:none;">마이페이지</a></li>
     <li><a href="#" class="nl" data-p="admin">관리자</a></li>
   </ul>
   <button class="hamburger" onclick="toggleMenu()" aria-label="메뉴">
     <span></span><span></span><span></span>
   </button>
   <div class="nav-cta" id="navCta">
-    <button class="btn" onclick="openAuthModal()">로그인</button>
-    <button class="btn fill" onclick="openAuthModal()">가입하기</button>
+    <button class="btn" id="loginBtn" onclick="openAuthModal()">로그인</button>
+    <button class="btn fill" id="signupBtn" onclick="openAuthModal()">가입하기</button>
   </div>
   <div class="nav-user-wrap" id="navUser" style="display:none;">
     <div id="navAvatar" onclick="toggleUserDropdown()"></div>
@@ -1692,7 +1691,7 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
         navAvatar.innerHTML = `<div class="user-avatar-placeholder" onclick="toggleUserDropdown()">${(user.displayName||'U')[0]}</div>`;
       }
       if (role === 'admin' || role === 'super_admin') {
-        adminLink.style.display = 'block';
+        if(adminLink) adminLink.style.display = 'block';
       }
     } else {
       navCta.style.display = 'flex';
@@ -1778,11 +1777,16 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
   // ── 모달 ─────────────────────────────────────────────────
   window.openAuthModal = function() {
     if (currentUser) { window.switchPage('mypage'); return; }
-    document.getElementById('authModal').classList.add('open');
+    const modal = document.getElementById('authModal');
+    modal.style.display = 'flex';
+    modal.classList.add('open');
   }
   window.closeAuthModal = function() {
-    document.getElementById('authModal').classList.remove('open');
+    const modal = document.getElementById('authModal');
+    modal.classList.remove('open');
+    modal.style.display = 'none';
   }
+
   document.getElementById('authModal').addEventListener('click', e => {
     if (e.target === document.getElementById('authModal')) closeAuthModal();
   });

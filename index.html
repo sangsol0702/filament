@@ -30,16 +30,17 @@ body::after {
 /* NAV */
 nav {
   position:sticky; top:0; z-index:200;
-  display:flex; align-items:center; justify-content:space-between;
+  display:grid; grid-template-columns:auto 1fr auto;
+  align-items:center;
   padding:.9rem 3rem;
   background:rgba(244,239,230,.92);
   backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
-  gap:2rem;
+  gap:1rem;
 }
 .logo { font-family:'Playfair Display',serif; font-size:1.45rem; letter-spacing:.18em; color:var(--ink); text-decoration:none; }
 .logo em { font-style:italic; color:var(--rust); }
-.nav-links { display:flex; gap:1.5rem; list-style:none; }
+.nav-links { display:flex; gap:1.5rem; list-style:none; justify-content:center; }
 .nav-links a { font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; color:var(--sepia); text-decoration:none; transition:color .2s; font-family:'DM Sans',sans-serif; }
 .nav-links a:hover, .nav-links a.active { color:var(--ink); }
 .nav-cta { display:flex; gap:.75rem; }
@@ -1686,9 +1687,9 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
       navUser.style.display = 'flex';
       navUser.style.alignItems = 'center';
       if (user.photoURL) {
-        navAvatar.innerHTML = `<img src="${user.photoURL}" style="width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid var(--border);" onclick="toggleUserDropdown()">`;
+        navAvatar.innerHTML = `<img src="${user.photoURL}" style="width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid var(--border);" onclick="toggleUserDropdown(event)">`;
       } else {
-        navAvatar.innerHTML = `<div class="user-avatar-placeholder" onclick="toggleUserDropdown()">${(user.displayName||'U')[0]}</div>`;
+        navAvatar.innerHTML = `<div class="user-avatar-placeholder" onclick="toggleUserDropdown(event)">${(user.displayName||'U')[0]}</div>`;
       }
       if (role === 'admin' || role === 'super_admin') {
         if(adminLink) adminLink.style.display = 'block';
@@ -1763,8 +1764,10 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
   }
 
   // ── 드롭다운 ─────────────────────────────────────────────
-  window.toggleUserDropdown = function() {
-    document.getElementById('userDropdown').classList.toggle('open');
+  window.toggleUserDropdown = function(e) {
+    if(e) e.stopPropagation();
+    const dd = document.getElementById('userDropdown');
+    if(dd) dd.classList.toggle('open');
   }
   window.closeUserDropdown = function() {
     document.getElementById('userDropdown').classList.remove('open');

@@ -1403,14 +1403,7 @@ loadStyles();
     document.getElementById('era-' + id).innerHTML = '<span style="font-size:.82rem;color:#8B2018;">✗ 반려 처리되었습니다</span>';
   }
 
-  // 페이지 전환시 이벤트 로드
-  document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
-    a.addEventListener('click', () => {
-      const id = a.dataset.p;
-      if (id === 'events') setTimeout(loadEvents, 200);
-      if (id === 'admin') setTimeout(() => { loadAdminEvents(); }, 200);
-    });
-  });
+  // 이벤트 로드는 통합 switchPage에서 처리
 
   // 초기 로드
   loadEvents();
@@ -1609,12 +1602,7 @@ function filterMapTag(el, tag) {
   renderMapShops(mapShops);
 }
 
-// 페이지 전환시 지도 초기화
-document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
-  a.addEventListener('click', () => {
-    if (a.dataset.p === 'map' && !kakaoMap) setTimeout(initMap, 200);
-  });
-});
+// 지도 초기화는 통합 switchPage에서 처리
 
 // shops 로드 후 지도 데이터 세팅 - 기존 loadShops에 통합됨
 </script>
@@ -1644,11 +1632,14 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
 
   let currentUser = null;
   let currentRole = 'user';
+  window._currentUser = null;
+  window._currentRole = 'user';
 
   // ── 로그인 상태 감지 ────────────────────────────────────
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
+      window._currentUser = user;
       // Firestore에 유저 정보 저장/불러오기
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
@@ -1662,6 +1653,7 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
         currentRole = 'user';
       } else {
         currentRole = userSnap.data().role || 'user';
+      window._currentRole = currentRole;
         // 닉네임 인풋 채우기
         const ni = document.getElementById('nicknameInput');
         if (ni) ni.value = userSnap.data().nickname || '';
@@ -1791,17 +1783,35 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
   }
 
   document.getElementById('authModal').addEventListener('click', e => {
-    if (e.target === document.getElementById('authModal')) closeAuthModal();
+    if (e.target === document.getElementById('authModal')) window.closeAuthModal();
   });
 
-  // 마이페이지 전환 시 UI 갱신
-  document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
-    a.addEventListener('click', () => {
-      if (a.dataset.p === 'mypage' && currentUser) {
-        setTimeout(() => updateMypageUI(currentUser, currentRole), 100);
-      }
-    });
-  });
+// 마이페이지 UI 갱신은 통합 switchPage에서 처리
+</script>
+
+
+<script>
+// ── 통합 switchPage 훅 ─────────────────────────────────
+(function() {
+  const _base = window.switchPage;
+  window.switchPage = function(id) {
+    _base(id);
+    // 지도 초기화
+    if (id === 'map' && typeof kakaoMap !== 'undefined' && !kakaoMap) {
+      setTimeout(function(){ if(typeof initMap === 'function') initMap(); }, 200);
+    }
+    // 이벤트 로드
+    if (id === 'events' && typeof loadEvents === 'function') setTimeout(loadEvents, 200);
+    if (id === 'admin' && typeof loadAdminEvents === 'function') setTimeout(loadAdminEvents, 200);
+    // 마이페이지 UI
+    if (id === 'mypage' && typeof updateMypageUI === 'function') {
+      setTimeout(function(){
+        var u = window._currentUser, r = window._currentRole;
+        if(u) updateMypageUI(u, r);
+      }, 100);
+    }
+  };
+})();
 </script>
 
 </body>

@@ -417,6 +417,81 @@ nav {
   background:var(--ink); color:var(--cream); border-color:var(--ink);
 }
 
+
+/* ── AUTH ── */
+.auth-modal-overlay {
+  display:none; position:fixed; inset:0; z-index:700;
+  background:rgba(24,20,15,.65); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center;
+}
+.auth-modal-overlay.open { display:flex; }
+.auth-modal {
+  background:var(--warm); width:90%; max-width:420px;
+  border:1px solid var(--border); padding:2.5rem 2rem;
+  text-align:center;
+}
+.auth-modal h2 {
+  font-family:'Playfair Display',serif; font-size:1.5rem;
+  margin-bottom:.5rem; color:var(--ink);
+}
+.auth-modal p { font-size:.85rem; color:var(--sepia); margin-bottom:1.75rem; font-weight:300; }
+.google-btn {
+  display:flex; align-items:center; justify-content:center; gap:.75rem;
+  width:100%; padding:.85rem; border:1px solid var(--border);
+  background:var(--warm); font-family:'DM Sans',sans-serif;
+  font-size:.9rem; color:var(--ink); cursor:pointer; transition:all .2s;
+  margin-bottom:.75rem;
+}
+.google-btn:hover { background:var(--cream); }
+.auth-close {
+  background:none; border:none; font-size:.8rem; color:var(--dusty);
+  cursor:pointer; margin-top:1rem; font-family:'DM Sans',sans-serif;
+}
+
+/* ── USER MENU ── */
+.user-avatar {
+  width:34px; height:34px; border-radius:50%; overflow:hidden;
+  cursor:pointer; border:2px solid var(--border); flex-shrink:0;
+}
+.user-avatar img { width:100%; height:100%; object-fit:cover; }
+.user-avatar-placeholder {
+  width:34px; height:34px; border-radius:50%; background:var(--ink);
+  color:var(--cream); display:flex; align-items:center; justify-content:center;
+  font-size:.85rem; font-family:'Playfair Display',serif; cursor:pointer;
+  flex-shrink:0;
+}
+.user-dropdown {
+  display:none; position:absolute; top:calc(100% + .5rem); right:0;
+  background:var(--warm); border:1px solid var(--border); min-width:160px; z-index:300;
+}
+.user-dropdown.open { display:block; }
+.user-dropdown a {
+  display:block; padding:.7rem 1.25rem; font-size:.82rem; color:var(--sepia);
+  text-decoration:none; border-bottom:1px solid var(--border); transition:all .15s;
+}
+.user-dropdown a:hover { background:var(--cream); color:var(--ink); }
+.user-dropdown a:last-child { border-bottom:none; }
+.nav-user-wrap { position:relative; }
+
+/* ── MYPAGE ── */
+.mypage-wrap { max-width:600px; margin:0 auto; padding:2.5rem 3rem; }
+.mypage-wrap h2 { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:2rem; font-weight:400; }
+.mypage-section { border:1px solid var(--border); background:var(--warm); padding:1.5rem; margin-bottom:1rem; }
+.mypage-section h3 { font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; color:var(--sepia); margin-bottom:1rem; }
+.mypage-row { display:flex; align-items:center; gap:1rem; margin-bottom:.75rem; }
+.mypage-row label { font-size:.82rem; color:var(--sepia); width:80px; flex-shrink:0; }
+.mypage-row input {
+  flex:1; padding:.6rem .9rem; border:1px solid var(--border);
+  background:var(--cream); font-family:'DM Sans',sans-serif;
+  font-size:.88rem; color:var(--ink); outline:none;
+}
+.mypage-row .badge-role {
+  font-size:.72rem; padding:.2rem .7rem; letter-spacing:.06em; text-transform:uppercase;
+}
+.role-super { background:#FDF3E3; color:#8B5E18; border:1px solid #E8C87E; }
+.role-admin { background:#EAF4EE; color:#2E6E45; border:1px solid #7EC49A; }
+.role-user { background:var(--cream); color:var(--sepia); border:1px solid var(--border); }
+
 /* loading */
 .loading { text-align:center; padding:3rem; color:var(--dusty); font-family:'IM Fell English',serif; font-style:italic; }
 
@@ -434,14 +509,23 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <li><a href="#" class="nl" data-p="community">커뮤니티</a></li>
     <li><a href="#" class="nl" data-p="events">이벤트</a></li>
     <li><a href="#" class="nl" data-p="map">지도</a></li>
+    <li><a href="#" class="nl" data-p="mypage" id="mypageNavLink" style="display:none;">마이페이지</a></li>
     <li><a href="#" class="nl" data-p="admin">관리자</a></li>
   </ul>
   <button class="hamburger" onclick="toggleMenu()" aria-label="메뉴">
     <span></span><span></span><span></span>
   </button>
-  <div class="nav-cta">
-    <button class="btn">로그인</button>
-    <button class="btn fill">가입하기</button>
+  <div class="nav-cta" id="navCta">
+    <button class="btn" onclick="openAuthModal()">로그인</button>
+    <button class="btn fill" onclick="openAuthModal()">가입하기</button>
+  </div>
+  <div class="nav-user-wrap" id="navUser" style="display:none;">
+    <div id="navAvatar" onclick="toggleUserDropdown()"></div>
+    <div class="user-dropdown" id="userDropdown">
+      <a href="#" onclick="switchPage('mypage');closeUserDropdown();return false;">마이페이지</a>
+      <a href="#" id="adminMenuLink" style="display:none;" onclick="switchPage('admin');closeUserDropdown();return false;">관리자</a>
+      <a href="#" onclick="signOutUser();return false;" style="color:var(--rust);">로그아웃</a>
+    </div>
   </div>
 </nav>
 
@@ -472,6 +556,10 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <a href="#" class="drawer-link dn" data-p="map">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
       지도
+    </a>
+    <a href="#" class="drawer-link dn" data-p="mypage">
+      <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></span>
+      마이페이지
     </a>
     <a href="#" class="drawer-link dn" data-p="admin">
       <span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
@@ -510,8 +598,12 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
     지도
   </a>
-  <a href="#" class="mnt" data-p="admin">
+  <a href="#" class="mnt" data-p="mypage">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+    마이페이지
+  </a>
+  <a href="#" class="mnt" data-p="admin">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/></svg>
     관리자
   </a>
 </div>
@@ -1324,6 +1416,56 @@ loadStyles();
   loadEvents();
 </script>
 
+
+<!-- 로그인 모달 -->
+<div class="auth-modal-overlay" id="authModal">
+  <div class="auth-modal">
+    <h2>FILAMENT</h2>
+    <p>로그인하고 커뮤니티에 참여하세요</p>
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Google로 계속하기
+    </button>
+    <button class="auth-close" onclick="closeAuthModal()">닫기</button>
+  </div>
+</div>
+
+<!-- 마이페이지 -->
+<div id="mypage" class="page">
+  <div class="mypage-wrap">
+    <h2>마이페이지</h2>
+    <div class="mypage-section">
+      <h3>프로필</h3>
+      <div class="mypage-row">
+        <label>닉네임</label>
+        <input type="text" id="nicknameInput" placeholder="닉네임 입력">
+        <button class="btn fill" onclick="saveNickname()" style="padding:.5rem 1rem;font-size:.78rem;">저장</button>
+      </div>
+      <div class="mypage-row">
+        <label>이메일</label>
+        <span id="myEmail" style="font-size:.85rem;color:var(--sepia);"></span>
+      </div>
+      <div class="mypage-row">
+        <label>권한</label>
+        <span id="myRole" class="mypage-row badge-role"></span>
+      </div>
+    </div>
+    <div class="mypage-section" id="adminSection" style="display:none;">
+      <h3>관리자 권한 부여</h3>
+      <div class="mypage-row">
+        <input type="email" id="grantEmail" placeholder="권한 부여할 이메일" style="flex:1;">
+        <select id="grantRole" style="padding:.6rem .9rem;border:1px solid var(--border);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:.82rem;">
+          <option value="admin">관리자</option>
+          <option value="user">일반유저</option>
+        </select>
+        <button class="btn fill" onclick="grantRole()" style="padding:.5rem 1rem;font-size:.78rem;">부여</button>
+      </div>
+      <p id="grantMsg" style="font-size:.78rem;color:var(--sepia);margin-top:.5rem;"></p>
+    </div>
+    <button onclick="signOutUser()" class="btn" style="color:var(--rust);border-color:var(--rust);">로그아웃</button>
+  </div>
+</div>
+
 <!-- 카카오맵 SDK -->
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services"></script>
 
@@ -1475,6 +1617,184 @@ document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
 });
 
 // shops 로드 후 지도 데이터 세팅 - 기존 loadShops에 통합됨
+</script>
+
+
+<!-- Firebase Auth -->
+<script type="module">
+  import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsN9gBDRIxymWLTSsBZGOBoNvChKsiCaI",
+    authDomain: "filament-752a8.firebaseapp.com",
+    projectId: "filament-752a8",
+    storageBucket: "filament-752a8.firebasestorage.app",
+    messagingSenderId: "467566783358",
+    appId: "1:467566783358:web:01523cd2e9e43acda5612f"
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  let currentUser = null;
+  let currentRole = 'user';
+
+  // ── 로그인 상태 감지 ────────────────────────────────────
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      // Firestore에 유저 정보 저장/불러오기
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          nickname: user.displayName || '',
+          role: 'user',
+          createdAt: new Date()
+        });
+        currentRole = 'user';
+      } else {
+        currentRole = userSnap.data().role || 'user';
+        // 닉네임 인풋 채우기
+        const ni = document.getElementById('nicknameInput');
+        if (ni) ni.value = userSnap.data().nickname || '';
+      }
+      updateNavUI(user, currentRole);
+      updateMypageUI(user, currentRole);
+    } else {
+      currentUser = null;
+      currentRole = 'user';
+      updateNavUI(null, 'user');
+    }
+  });
+
+  // ── UI 업데이트 ──────────────────────────────────────────
+  function updateNavUI(user, role) {
+    const navCta = document.getElementById('navCta');
+    const navUser = document.getElementById('navUser');
+    const navAvatar = document.getElementById('navAvatar');
+    const adminLink = document.getElementById('adminMenuLink');
+
+    if (user) {
+      navCta.style.display = 'none';
+      navUser.style.display = 'flex';
+      navUser.style.alignItems = 'center';
+      if (user.photoURL) {
+        navAvatar.innerHTML = `<img src="${user.photoURL}" style="width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid var(--border);" onclick="toggleUserDropdown()">`;
+      } else {
+        navAvatar.innerHTML = `<div class="user-avatar-placeholder" onclick="toggleUserDropdown()">${(user.displayName||'U')[0]}</div>`;
+      }
+      if (role === 'admin' || role === 'super_admin') {
+        adminLink.style.display = 'block';
+      }
+    } else {
+      navCta.style.display = 'flex';
+      navUser.style.display = 'none';
+    }
+  }
+
+  function updateMypageUI(user, role) {
+    const emailEl = document.getElementById('myEmail');
+    const roleEl = document.getElementById('myRole');
+    const adminSection = document.getElementById('adminSection');
+    if (emailEl) emailEl.textContent = user.email || '';
+    if (roleEl) {
+      const labels = { super_admin: '최고관리자', admin: '관리자', user: '일반유저' };
+      const classes = { super_admin: 'role-super', admin: 'role-admin', user: 'role-user' };
+      roleEl.textContent = labels[role] || '일반유저';
+      roleEl.className = `badge-role ${classes[role] || 'role-user'}`;
+    }
+    if (adminSection && role === 'super_admin') adminSection.style.display = 'block';
+  }
+
+  // ── 구글 로그인 ──────────────────────────────────────────
+  window.signInWithGoogle = async function() {
+    try {
+      await signInWithPopup(auth, provider);
+      closeAuthModal();
+    } catch(e) {
+      console.error(e);
+      alert('로그인 중 오류가 발생했습니다.');
+    }
+  }
+
+  // ── 로그아웃 ─────────────────────────────────────────────
+  window.signOutUser = async function() {
+    await signOut(auth);
+    window.switchPage('discover');
+  }
+
+  // ── 닉네임 저장 ──────────────────────────────────────────
+  window.saveNickname = async function() {
+    if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    if (!nickname) { alert('닉네임을 입력해주세요.'); return; }
+    if (nickname.length > 12) { alert('닉네임은 12자 이내로 입력해주세요.'); return; }
+
+    // 중복 확인
+    const q = query(collection(db, 'users'), where('nickname', '==', nickname));
+    const snap = await getDocs(q);
+    const duplicate = snap.docs.some(d => d.id !== currentUser.uid);
+    if (duplicate) { alert('이미 사용 중인 닉네임이에요.'); return; }
+
+    await updateDoc(doc(db, 'users', currentUser.uid), { nickname });
+    alert('닉네임이 저장됐어요!');
+  }
+
+  // ── 권한 부여 (최고관리자만) ─────────────────────────────
+  window.grantRole = async function() {
+    if (currentRole !== 'super_admin') { alert('권한이 없습니다.'); return; }
+    const email = document.getElementById('grantEmail').value.trim();
+    const role = document.getElementById('grantRole').value;
+    if (!email) { alert('이메일을 입력해주세요.'); return; }
+
+    const q = query(collection(db, 'users'), where('email', '==', email));
+    const snap = await getDocs(q);
+    if (snap.empty) { document.getElementById('grantMsg').textContent = '해당 이메일의 유저를 찾을 수 없어요.'; return; }
+
+    await updateDoc(doc(db, 'users', snap.docs[0].id), { role });
+    document.getElementById('grantMsg').textContent = `✓ ${email} 에게 ${role === 'admin' ? '관리자' : '일반유저'} 권한을 부여했어요.`;
+  }
+
+  // ── 드롭다운 ─────────────────────────────────────────────
+  window.toggleUserDropdown = function() {
+    document.getElementById('userDropdown').classList.toggle('open');
+  }
+  window.closeUserDropdown = function() {
+    document.getElementById('userDropdown').classList.remove('open');
+  }
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('navUser');
+    if (wrap && !wrap.contains(e.target)) closeUserDropdown();
+  });
+
+  // ── 모달 ─────────────────────────────────────────────────
+  window.openAuthModal = function() {
+    if (currentUser) { window.switchPage('mypage'); return; }
+    document.getElementById('authModal').classList.add('open');
+  }
+  window.closeAuthModal = function() {
+    document.getElementById('authModal').classList.remove('open');
+  }
+  document.getElementById('authModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('authModal')) closeAuthModal();
+  });
+
+  // 마이페이지 전환 시 UI 갱신
+  document.querySelectorAll('.nl, .dn, .mnt').forEach(a => {
+    a.addEventListener('click', () => {
+      if (a.dataset.p === 'mypage' && currentUser) {
+        setTimeout(() => updateMypageUI(currentUser, currentRole), 100);
+      }
+    });
+  });
 </script>
 
 </body>

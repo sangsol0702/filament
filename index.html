@@ -1569,7 +1569,9 @@ function renderMapShops(list) {
           </div>`
         });
         kakao.maps.event.addListener(marker, 'click', function() {
+          if (window._openInfoWindow) window._openInfoWindow.close();
           infowindow.open(kakaoMap, marker);
+          window._openInfoWindow = infowindow;
           showMapPanel(s);
         });
         mapMarkers.push(marker);

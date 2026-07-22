@@ -499,6 +499,7 @@ nav {
 footer { border-top:1px solid var(--border); padding:1.5rem 3rem; display:flex; justify-content:space-between; align-items:center; }
 footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',serif; font-style:italic; }
 </style>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services"></script>
 </head>
 <body>
 
@@ -1487,20 +1488,7 @@ loadStyles();
   </div>
 </div>
 
-<!-- 카카오맵 SDK -->
-<script>
-// 카카오맵 SDK 비동기 로드
-(function() {
-  var script = document.createElement("script");
-  script.src = "//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services&autoload=false";
-  script.onload = function() {
-    kakao.maps.load(function() {
-      window._kakaoReady = true;
-    });
-  };
-  document.head.appendChild(script);
-})();
-</script>
+
 
 <script>
 // ── MAP ───────────────────────────────────────────────
@@ -1512,9 +1500,6 @@ let geocoder = null;
 
 function initMap() {
   if (!document.getElementById('kakaoMap')) return;
-  if (!window._kakaoReady) {
-    setTimeout(initMap, 300); return;
-  }
   const container = document.getElementById('kakaoMap');
   const options = {
     center: new kakao.maps.LatLng(37.5563, 126.9236),

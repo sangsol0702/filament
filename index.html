@@ -384,15 +384,32 @@ nav {
 .mobile-tab a.active svg { stroke:var(--ink); }
 
 
-/* ── EVENT SECTION ── */
-.event-section { max-width:1100px; margin:0 auto; padding:2rem 3rem 0; }
-.event-section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
-.event-section-header h2 { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:400; }
+/* ── EVENT BANNER (큐레이션 한 줄 띠) ── */
+.event-banner {
+  display:flex; align-items:center; gap:1rem;
+  max-width:1100px; margin:0 auto 2.5rem; padding:.85rem 1.4rem;
+  border:1px solid var(--border); background:var(--warm);
+  text-decoration:none; transition:background .18s;
+}
+.event-banner:hover { background:var(--cream); }
+.event-banner:hover .event-banner-cta { color:var(--rust); border-color:var(--rust); }
+.event-banner-label { font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--rust); border:1px solid var(--rust); padding:.2rem .6rem; flex-shrink:0; }
+.event-banner-text { flex:1; font-size:.85rem; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.event-banner-text b { font-weight:500; color:var(--rust); }
+.event-banner-cta { font-size:.76rem; color:var(--sepia); flex-shrink:0; border-bottom:1px solid transparent; transition:all .2s; }
+
+/* ── EVENT GRID/CARD (이벤트 탭) ── */
 .event-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); max-width:1100px; margin:0 auto; }
 .event-card { background:var(--warm); position:relative; overflow:hidden; transition:background .18s; }
 .event-card:hover { background:var(--cream); }
 .event-card-inner { padding:1.5rem; }
-@media (max-width:768px) { .event-grid { grid-template-columns:1fr; } .event-section { padding:1.5rem 1.25rem 0; } }
+.event-card.ended { opacity:.55; filter:grayscale(.65); }
+.event-card.ended:hover { opacity:.85; }
+@media (max-width:768px) {
+  .event-grid { grid-template-columns:1fr; }
+  .event-banner { margin:0 1.25rem 1.5rem; padding:.7rem 1rem; gap:.7rem; }
+  .event-banner-cta { display:none; }
+}
 
 /* ── EVENT MODAL ── */
 .event-modal-overlay { display:none; position:fixed; inset:0; z-index:600; background:rgba(24,20,15,.6); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
@@ -622,19 +639,13 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <div class="tags" id="tagRow"></div>
   </div>
 
-  <!-- 이벤트 미리보기 섹션 -->
+  <!-- 진행 중인 이벤트 배너 (이벤트 있을 때만 표시, 클릭하면 이벤트 탭 이동) -->
   <div id="eventSection" style="display:none;">
-    <div class="event-section">
-      <div class="event-section-header">
-        <h2>진행 중인 <em style="font-style:italic;color:var(--rust);">이벤트 · 세일</em></h2>
-        <a href="#" class="card-link" onclick="switchPage('events');return false;">전체 보기 →</a>
-      </div>
-    </div>
-    <div class="event-grid" id="eventPreview" style="max-width:1100px;margin:0 auto;"></div>
-    <div style="max-width:1100px;margin:.75rem auto 0;padding:0 3rem;">
-      <button onclick="openEventModal()" style="font-size:.78rem;color:var(--sepia);background:none;border:1px solid var(--border);padding:.4rem 1rem;cursor:pointer;font-family:'DM Sans',sans-serif;">+ 이벤트 신청하기</button>
-    </div>
-    <div style="height:2rem;"></div>
+    <a href="#" class="event-banner" onclick="switchPage('events');return false;">
+      <span class="event-banner-label">Event</span>
+      <span class="event-banner-text" id="eventBannerText"></span>
+      <span class="event-banner-cta">전체 보기 →</span>
+    </a>
   </div>
 
   <div class="results-bar">
@@ -792,6 +803,15 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     <button onclick="openEventModal()" class="btn fill">+ 이벤트 신청</button>
   </div>
   <div class="event-grid" id="eventGrid" style="max-width:1100px;margin:0 auto;"></div>
+
+  <!-- 종료된 이벤트 (기간 지나면 자동으로 여기로 내려옴) -->
+  <div id="endedEventSection" style="display:none;">
+    <div style="max-width:1100px;margin:3rem auto 0;padding:0 3rem 1rem;border-bottom:1px solid var(--border);">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:400;color:var(--sepia);">종료된 이벤트</h3>
+    </div>
+    <div class="event-grid" id="endedEventGrid" style="max-width:1100px;margin:0 auto;"></div>
+  </div>
+
   <footer><p></p><p>FILAMENT © 2025</p></footer>
 </div>
 
@@ -1263,43 +1283,42 @@ loadStyles();
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // id → 이벤트 데이터 캐시 (onclick에 데이터 직접 안 박기 위함)
-  const eventsById = {};
-
   // ── 이벤트 불러오기 ──────────────────────────────────────
   // where 하나만 사용 → Firestore 복합 인덱스 불필요.
-  // 종료일 필터와 정렬은 클라이언트에서 처리 (이벤트 수가 적어서 충분)
+  // 종료일 기준 진행중/종료 분리는 클라이언트에서 처리하고,
+  // 페이지 로드·이벤트탭 진입 때마다 다시 계산돼서 기간이 지나면 자동으로 종료 칸으로 이동
   async function loadEvents() {
     try {
       const q = query(collection(db, 'events'), where('status', '==', 'approved'));
       const snapshot = await getDocs(q);
       const now = new Date();
-      const events = [];
+      const active = [];
+      const ended = [];
       snapshot.forEach(d => {
         const ev = { id: d.id, ...d.data() };
-        eventsById[ev.id] = ev;
-        if (ev.endDate?.toDate?.() >= now) events.push(ev);
+        if (ev.endDate?.toDate?.() >= now) active.push(ev);
+        else ended.push(ev);
       });
-      events.sort((a, b) => a.endDate.toDate() - b.endDate.toDate());
-      renderEvents(events);
-      renderEventPreview(events);
+      active.sort((a, b) => (a.endDate?.toDate?.() || 0) - (b.endDate?.toDate?.() || 0)); // 종료 임박순
+      ended.sort((a, b) => (b.endDate?.toDate?.() || 0) - (a.endDate?.toDate?.() || 0));  // 최근 종료순
+      renderEvents(active);
+      renderEndedEvents(ended);
+      renderEventBanner(active);
     } catch(e) {
       console.error('이벤트 로드 실패:', e);
     }
   }
 
-  // ── 이벤트 미리보기 (큐레이션 페이지 3개) ─────────────────
-  function renderEventPreview(events) {
-    const preview = document.getElementById('eventPreview');
-    if (!preview) return;
-    const top3 = events.slice(0, 3);
-    if (!top3.length) {
-      preview.style.display = 'none';
-      document.getElementById('eventSection').style.display = 'none';
-      return;
-    }
-    document.getElementById('eventSection').style.display = 'block';
-    preview.innerHTML = top3.map(e => renderEventCard(e)).join('');
+  // ── 이벤트 배너 (큐레이션 페이지 한 줄 띠) ────────────────
+  function renderEventBanner(events) {
+    const section = document.getElementById('eventSection');
+    const text = document.getElementById('eventBannerText');
+    if (!section || !text) return;
+    if (!events.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    const first = events[0]; // 종료 임박순 첫 번째
+    const rest = events.length > 1 ? ` 외 ${events.length - 1}건` : '';
+    text.innerHTML = `진행 중인 이벤트 <b>${events.length}건</b> · ${esc(first.shopName)} — ${esc(first.title)}${rest}`;
   }
 
   // ── 전체 이벤트 탭 ────────────────────────────────────────
@@ -1313,17 +1332,29 @@ loadStyles();
     grid.innerHTML = events.map(e => renderEventCard(e)).join('');
   }
 
-  function renderEventCard(e) {
+  // ── 종료된 이벤트 ─────────────────────────────────────────
+  function renderEndedEvents(events) {
+    const section = document.getElementById('endedEventSection');
+    const grid = document.getElementById('endedEventGrid');
+    if (!section || !grid) return;
+    if (!events.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    grid.innerHTML = events.map(e => renderEventCard(e, true)).join('');
+  }
+
+  function renderEventCard(e, ended = false) {
     const start = e.startDate?.toDate?.()?.toLocaleDateString('ko-KR') || '';
     const end = e.endDate?.toDate?.()?.toLocaleDateString('ko-KR') || '';
     const dday = Math.ceil((e.endDate?.toDate() - new Date()) / (1000*60*60*24));
     const link = safeUrl(e.link); // http(s)만 허용
     return `
-      <div class="event-card" onmouseenter="this.querySelector('.event-hidden').style.opacity='1'" onmouseleave="this.querySelector('.event-hidden').style.opacity='0'">
+      <div class="event-card${ended ? ' ended' : ''}">
         <div class="event-card-inner">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
             <span class="card-type" style="color:var(--rust);border-color:var(--rust);">${esc(e.type) || '이벤트'}</span>
-            <span style="font-size:.72rem;color:var(--rust);font-weight:500;">D-${dday}</span>
+            ${ended
+              ? `<span style="font-size:.72rem;color:var(--dusty);font-weight:500;">종료</span>`
+              : `<span style="font-size:.72rem;color:var(--rust);font-weight:500;">D-${dday}</span>`}
           </div>
           <div class="card-name" style="font-size:1.05rem;margin-bottom:.4rem;">${esc(e.shopName)}</div>
           <div style="font-size:.9rem;font-weight:500;color:var(--ink);margin-bottom:.5rem;">${esc(e.title)}</div>
@@ -1332,9 +1363,6 @@ loadStyles();
           ${e.address ? `<div style="font-size:.72rem;color:var(--sepia);margin-top:.35rem;">📍 ${esc(e.address)}</div>` : ''}
           ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener" class="card-link" style="font-size:.75rem;margin-top:.5rem;display:inline-block;">온라인 바로가기 →</a>` : ''}
         </div>
-        <div class="event-hidden" style="opacity:0;transition:opacity .2s;position:absolute;bottom:0;left:0;right:0;padding:.75rem;background:var(--ink);display:flex;gap:.5rem;">
-          <button onclick="openEventModalById('${e.id}')" style="flex:1;padding:.4rem;background:transparent;border:1px solid var(--cream);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer;">이벤트 신청</button>
-        </div>
       </div>`;
   }
 
@@ -1342,12 +1370,6 @@ loadStyles();
   window.openEventModal = function(shopName = '') {
     document.getElementById('modalShopName').value = shopName;
     document.getElementById('eventModal').classList.add('open');
-  }
-
-  // 카드에서 열 때는 id로 조회 (가게명을 onclick 문자열에 직접 넣지 않음)
-  window.openEventModalById = function(id) {
-    const ev = eventsById[id];
-    window.openEventModal(ev ? (ev.shopName || '') : '');
   }
 
   window.closeEventModal = function() {

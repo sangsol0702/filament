@@ -814,11 +814,10 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
         <!-- 로그인: 작성 폼 -->
         <div id="composerForm" style="display:none;">
           <select id="postCategory" class="composer-select">
-            <option value="OOTD">🧥 OOTD</option>
-            <option value="옷 정보 문의">❓ 옷 정보 문의</option>
-            <option value="픽업샵 후기">🏪 픽업샵 후기</option>
-            <option value="이 옷 어디꺼?">🔍 이 옷 어디꺼?</option>
-            <option value="구매 후기">📦 구매 후기</option>
+            <option value="자유">💬 자유</option>
+            <option value="질문">❓ 질문</option>
+            <option value="착샷">🧥 착샷</option>
+            <option value="후기">⭐ 후기</option>
           </select>
           <input type="text" id="postTitle" class="composer-tagin" maxlength="60"
                  placeholder="제목 (선택) — 비워두면 내용만 표시돼요" style="margin-top:0;margin-bottom:.5rem;">
@@ -1720,6 +1719,10 @@ loadStyles();
         <p id="nickSyncMsg" style="font-size:.78rem;color:var(--dusty);margin-top:.5rem;">
           기존 회원의 닉네임을 예약 목록에 등록해요. 한 번만 실행하면 됩니다.
         </p>
+        <button class="btn" onclick="migrateCategories()" style="padding:.5rem 1rem;font-size:.78rem;margin-top:.75rem;">카테고리 이관</button>
+        <p id="catMigrateMsg" style="font-size:.78rem;color:var(--dusty);margin-top:.5rem;">
+          개편 전 카테고리(OOTD·옷 정보 문의 등)로 저장된 글을 새 이름으로 옮겨요. 한 번만 실행하면 됩니다.
+        </p>
       </div>
     </div>
     <button onclick="signOutUser()" class="btn" style="color:var(--rust);border-color:var(--rust);">로그아웃</button>
@@ -2326,8 +2329,22 @@ function filterMapTag(el, tag) {
   const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const CATEGORIES = ['OOTD', '옷 정보 문의', '픽업샵 후기', '이 옷 어디꺼?', '구매 후기'];
-  const CAT_ICON = { 'OOTD':'🧥', '옷 정보 문의':'❓', '픽업샵 후기':'🏪', '이 옷 어디꺼?':'🔍', '구매 후기':'📦' };
+  // 탭에 보이는 순서 그대로
+  const CATEGORIES = ['자유', '질문', '착샷', '후기'];
+  const CAT_ICON = { '자유':'💬', '질문':'❓', '착샷':'🧥', '후기':'⭐' };
+
+  // 카테고리 개편 전에 쓰인 이름들.
+  // 이관(migrateCategories)을 돌리기 전에도 옛 글이 제 위치에 보이도록 읽을 때 변환한다
+  const LEGACY_CATEGORY = {
+    'OOTD': '착샷',
+    '옷 정보 문의': '질문',
+    '픽업샵 후기': '자유',
+    '이 옷 어디꺼?': '후기',
+    '구매 후기': '후기'
+  };
+  function normCategory(c) {
+    return CATEGORIES.includes(c) ? c : (LEGACY_CATEGORY[c] || '자유');
+  }
 
   let _posts = [];            // 화면에 그려진 순서 그대로 — onclick은 이 배열의 인덱스를 넘긴다
   let _filter = '전체';
@@ -2538,7 +2555,7 @@ function filterMapTag(el, tag) {
     // 검색 중이면 칩 개수도 검색 결과 기준 — 안 그러면 "3건"인데 눌러보니 0건인 상황이 생김
     const base = _posts.filter(matchesSearch);
     const counts = {};
-    base.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+    base.forEach(p => { const c = normCategory(p.category); counts[c] = (counts[c] || 0) + 1; });
     const chips = ['전체', ...CATEGORIES];
     box.innerHTML = chips.map((c, i) => {
       const n = c === '전체' ? base.length : (counts[c] || 0);
@@ -2559,7 +2576,7 @@ function filterMapTag(el, tag) {
     const feed = document.getElementById('postFeed');
     if (!feed) return;
     const searched = _posts.filter(matchesSearch);
-    const list = _filter === '전체' ? searched : searched.filter(p => p.category === _filter);
+    const list = _filter === '전체' ? searched : searched.filter(p => normCategory(p.category) === _filter);
 
     // 검색 결과 요약
     const meta = document.getElementById('searchMeta');
@@ -2605,7 +2622,7 @@ function filterMapTag(el, tag) {
             <div class="post-name">${esc(nick)}</div>
             <div class="post-time">${esc(timeAgo(p.createdAt))}</div>
           </div>
-          <span class="cat-label">${esc(p.category || '')}</span>
+          <span class="cat-label">${esc(normCategory(p.category))}</span>
         </div>
         ${p.title ? `<div class="post-title">${hl(p.title)}</div>` : ''}
         <div class="post-body">
@@ -2804,6 +2821,35 @@ function filterMapTag(el, tag) {
     } catch(e) {
       console.error('댓글 삭제 실패:', e);
       alert('댓글을 삭제하지 못했어요.');
+    }
+  };
+
+  // ── 카테고리 이관 (관리자, 일회성) ────────────────────────
+  // 개편 전 이름으로 저장된 글을 새 이름으로 다시 써준다.
+  // 화면에는 normCategory()가 이미 새 이름으로 보여주므로 급한 작업은 아니지만,
+  // DB에 옛 이름이 남아 있으면 나중에 헷갈리므로 한 번 정리한다
+  window.migrateCategories = async function() {
+    if (!['admin','super_admin'].includes(window._currentRole)) { alert('권한이 없습니다.'); return; }
+    const msg = document.getElementById('catMigrateMsg');
+    msg.textContent = '이관하는 중…';
+    try {
+      const snap = await getDocs(collection(db, 'posts'));
+      let moved = 0, skipped = 0, failed = 0;
+      for (const d of snap.docs) {
+        const cur = d.data().category;
+        if (CATEGORIES.includes(cur)) { skipped++; continue; }   // 이미 새 이름
+        const next = normCategory(cur);
+        try {
+          await updateDoc(doc(db, 'posts', d.id), { category: next });
+          moved++;
+        } catch(e) { console.error('이관 실패:', d.id, cur, e); failed++; }
+      }
+      msg.textContent = `✓ 이관 ${moved}건 · 건너뜀 ${skipped}건`
+        + (failed ? ` · 실패 ${failed}건 (콘솔 확인)` : '');
+      if (document.getElementById('community')?.classList.contains('active')) loadPosts();
+    } catch(e) {
+      console.error('카테고리 이관 실패:', e);
+      msg.textContent = '글 목록을 불러오지 못했어요.';
     }
   };
 

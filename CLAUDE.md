@@ -14,6 +14,10 @@
   - Firestore `events` 컬렉션 — 이벤트 신청/검수 (status: pending / approved / rejected / revision)
     - `revision`(수정 요청)은 최종 상태가 아님 — 관리자탭에서 계속 승인·반려할 수 있고, 사유는 `revisionNote`에 저장
   - Firestore `users` 컬렉션 — 구글 로그인 유저, role: user / admin / super_admin
+    - **본인 문서만 읽을 수 있음. 목록 조회(list)는 최고관리자 전용** — 예전엔 로그인한 누구나 전체 조회가 돼서 회원 이메일이 다 노출됐음
+  - Firestore `nicknames` 컬렉션 — 문서 ID가 닉네임 소문자, 내용은 `{ uid, nickname }`
+    - 닉네임 중복 확인 전용. users 전체 조회 없이 고유성을 보장하려고 분리한 것
+    - 규칙에서 **create만 허용하고 update는 막음** → 이미 있는 닉네임에 setDoc하면 permission-denied가 나고 그게 곧 "중복". 별도 조회가 없어 동시 요청에도 한 명만 성공
   - Firestore `posts` 컬렉션 — 커뮤니티 글 (uid, nickname, category, text, tags[], photo, likedBy[], createdAt)
   - Auth: Google 로그인 (signInWithPopup)
 - 카카오맵 SDK — 지도 페이지, geocoder로 주소(`링크2` 컬럼)→좌표 변환

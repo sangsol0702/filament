@@ -1714,6 +1714,13 @@ loadStyles();
         <button class="btn fill" onclick="grantRole()" style="padding:.5rem 1rem;font-size:.78rem;">부여</button>
       </div>
       <p id="grantMsg" style="font-size:.78rem;color:var(--sepia);margin-top:.5rem;"></p>
+      <!-- users 잠그기 전에 가입한 회원들의 닉네임 예약을 만들어주는 일회성 작업 -->
+      <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);">
+        <button class="btn" onclick="syncNicknameReservations()" style="padding:.5rem 1rem;font-size:.78rem;">닉네임 예약 동기화</button>
+        <p id="nickSyncMsg" style="font-size:.78rem;color:var(--dusty);margin-top:.5rem;">
+          기존 회원의 닉네임을 예약 목록에 등록해요. 한 번만 실행하면 됩니다.
+        </p>
+      </div>
     </div>
     <button onclick="signOutUser()" class="btn" style="color:var(--rust);border-color:var(--rust);">로그아웃</button>
     </div>
@@ -1885,7 +1892,7 @@ function filterMapTag(el, tag) {
   import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs }
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
   const firebaseConfig = {
@@ -1916,14 +1923,25 @@ function filterMapTag(el, tag) {
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
+        // 구글 이름을 초기 닉네임으로 쓰되, 반드시 nicknames에 예약까지 성공해야 채운다.
+        // 예약 없이 넣으면 같은 이름을 가진 다음 사람과 닉네임이 겹쳐버림.
+        // 이미 쓰이는 이름이면 빈 값으로 두고, 글·댓글 작성 시 닉네임 설정 화면으로 유도된다
+        let initialNick = '';
+        const wanted = (user.displayName || '').trim().slice(0, 12);
+        if (wanted && !wanted.includes('/') && wanted !== '.' && wanted !== '..') {
+          try {
+            await setDoc(doc(db, 'nicknames', wanted.toLowerCase()), { uid: user.uid, nickname: wanted });
+            initialNick = wanted;
+          } catch(_) { initialNick = ''; }   // 이미 선점된 이름
+        }
         await setDoc(userRef, {
           email: user.email,
-          nickname: user.displayName || '',
+          nickname: initialNick,
           role: 'user',
           createdAt: new Date()
         });
         currentRole = 'user';
-        window._currentNickname = user.displayName || '';
+        window._currentNickname = initialNick;
       } else {
         currentRole = userSnap.data().role || 'user';
         // 닉네임 인풋 채우기
@@ -2050,19 +2068,61 @@ function filterMapTag(el, tag) {
   }
 
   // ── 닉네임 저장 ──────────────────────────────────────────
+  // 중복 확인을 users 전체 조회로 하면 users를 로그인한 누구에게나 열어야 해서
+  // (= 회원 이메일 전체가 노출) nicknames/{닉네임소문자} 예약 컬렉션으로 분리했다.
+  // 예약 문서는 규칙에서 create만 허용하고 update는 막아둬서,
+  // 이미 있는 닉네임에 setDoc하면 permission-denied가 나고 그게 곧 "중복"이다.
+  // 별도 조회 없이 원자적으로 선점되므로 동시 요청에도 한 명만 성공한다.
+  function nicknameKey(n) { return n.toLowerCase(); }
+
   window.saveNickname = async function() {
     if (!currentUser) { alert('로그인이 필요합니다.'); return; }
     const nickname = document.getElementById('nicknameInput').value.trim();
     if (!nickname) { alert('닉네임을 입력해주세요.'); return; }
     if (nickname.length > 12) { alert('닉네임은 12자 이내로 입력해주세요.'); return; }
+    // 문서 ID로 쓰기 때문에 Firestore가 금지하는 형태를 걸러낸다
+    if (nickname.includes('/') || nickname === '.' || nickname === '..') {
+      alert("닉네임에 '/' 는 쓸 수 없어요."); return;
+    }
 
-    // 중복 확인
-    const q = query(collection(db, 'users'), where('nickname', '==', nickname));
-    const snap = await getDocs(q);
-    const duplicate = snap.docs.some(d => d.id !== currentUser.uid);
-    if (duplicate) { alert('이미 사용 중인 닉네임이에요.'); return; }
+    const prev = (window._currentNickname || '').trim();
+    if (nickname === prev) { alert('지금 쓰고 있는 닉네임이에요.'); return; }
 
-    await updateDoc(doc(db, 'users', currentUser.uid), { nickname });
+    const key = nicknameKey(nickname);
+    const prevKey = prev ? nicknameKey(prev) : '';
+
+    // 1) 선점 시도
+    if (key !== prevKey) {
+      try {
+        await setDoc(doc(db, 'nicknames', key), { uid: currentUser.uid, nickname });
+      } catch(e) {
+        // 규칙이 막은 것 = 이미 누가 가져간 닉네임.
+        // 단, 이전 시도가 중간에 끊겨서 "내가 이미 예약해둔" 경우일 수 있어 확인한다
+        let mine = false;
+        try {
+          const held = await getDoc(doc(db, 'nicknames', key));
+          mine = held.exists() && held.data().uid === currentUser.uid;
+        } catch(_) {}
+        if (!mine) { alert('이미 사용 중인 닉네임이에요.'); return; }
+      }
+    }
+
+    // 2) 프로필 갱신
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), { nickname });
+    } catch(e) {
+      console.error('닉네임 저장 실패:', e);
+      // 프로필 갱신이 실패했으면 방금 잡아둔 예약을 풀어준다 (닉네임이 붕 뜨지 않게)
+      if (key !== prevKey) { try { await deleteDoc(doc(db, 'nicknames', key)); } catch(_) {} }
+      alert('닉네임을 저장하지 못했어요.');
+      return;
+    }
+
+    // 3) 예전 닉네임 예약 해제 — 실패해도 치명적이지 않으므로 조용히 넘어간다
+    if (prevKey && prevKey !== key) {
+      try { await deleteDoc(doc(db, 'nicknames', prevKey)); } catch(_) {}
+    }
+
     window._currentNickname = nickname;
     // 이미 쓴 글에 박혀 있는 닉네임도 같이 갱신 (글은 닉네임을 복사해서 저장하므로)
     if (typeof window.syncMyPostNicknames === 'function') window.syncMyPostNicknames(nickname);
@@ -2101,6 +2161,36 @@ function filterMapTag(el, tag) {
     }
   }
   window.loadGrantUserOptions = loadGrantUserOptions;
+
+  // ── 닉네임 예약 동기화 (최고관리자, 일회성) ───────────────
+  // users를 잠그기 전에 가입한 회원들은 nicknames 예약이 없어서
+  // 다른 사람이 같은 닉네임을 가져갈 수 있다. 그 구멍을 메우는 작업.
+  // 이미 예약이 있으면 규칙이 막아주므로 여러 번 눌러도 안전하다
+  window.syncNicknameReservations = async function() {
+    if (currentRole !== 'super_admin') { alert('권한이 없습니다.'); return; }
+    const msg = document.getElementById('nickSyncMsg');
+    msg.textContent = '동기화하는 중…';
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      let done = 0, skipped = 0, failed = 0;
+      for (const d of snap.docs) {
+        const nick = (d.data().nickname || '').trim();
+        if (!nick || nick.includes('/') || nick === '.' || nick === '..') { skipped++; continue; }
+        const key = nicknameKey(nick);
+        try {
+          const held = await getDoc(doc(db, 'nicknames', key));
+          if (held.exists()) { skipped++; continue; }      // 이미 예약됨
+          await setDoc(doc(db, 'nicknames', key), { uid: d.id, nickname: nick });
+          done++;
+        } catch(e) { console.error('예약 실패:', nick, e); failed++; }
+      }
+      msg.textContent = `✓ 신규 등록 ${done}건 · 건너뜀 ${skipped}건`
+        + (failed ? ` · 실패 ${failed}건 (콘솔 확인)` : '');
+    } catch(e) {
+      console.error('닉네임 동기화 실패:', e);
+      msg.textContent = '사용자 목록을 불러오지 못했어요.';
+    }
+  }
 
   // ── 권한 부여 (최고관리자만) ─────────────────────────────
   window.grantRole = async function() {

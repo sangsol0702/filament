@@ -267,8 +267,7 @@ nav {
   display:block; width:22px; height:1.5px; background:var(--ink); transition:all .3s;
 }
 @media (max-width: 768px) {
-  .hamburger { display:flex; }
-  .nav-cta { display:none; }
+  .hamburger { display:flex; order:10; margin-left:0; }
   .nav-links { display:none; }
 }
 
@@ -331,11 +330,12 @@ nav {
   #mapPanel { height: auto !important; border-left: none !important; border-top: 1px solid var(--border); min-height: 80px; }
   .map-layout { margin: 0 !important; }
 
-  /* NAV */
-  nav { padding:.75rem 1.25rem; }
+  /* NAV: 로고 왼쪽 — 로그인·가입(작게 한 줄) — 햄버거 맨 오른쪽 */
+  nav { display:flex; align-items:center; gap:.5rem; padding:.75rem 1rem; }
   .nav-links { display:none; }
-  .nav-cta { display:none; }
-  .logo { font-size:1.2rem; }
+  .logo { font-size:1.05rem; margin-right:auto; letter-spacing:.14em; }
+  .nav-cta { gap:.4rem; }
+  .nav-cta .btn { font-size:.68rem; padding:.32rem .55rem; white-space:nowrap; letter-spacing:.03em; }
 
   /* 모바일 하단 탭바 */
   .mobile-tab { display:flex !important; }
@@ -372,6 +372,11 @@ nav {
   .admin-wrap { padding:1.25rem; }
   .stat-row { grid-template-columns:repeat(2,1fr); }
   .review-acts { flex-wrap:wrap; }
+
+  /* MYPAGE */
+  .mypage-wrap { padding:1.75rem 1.25rem; }
+  .mypage-row { flex-wrap:wrap; gap:.5rem; }
+  .mypage-row label { width:100%; }
 
   /* FOOTER */
   footer { flex-direction:column; gap:.5rem; text-align:center; padding:1.25rem; }
@@ -518,7 +523,7 @@ nav {
 .mypage-row { display:flex; align-items:center; gap:1rem; margin-bottom:.75rem; }
 .mypage-row label { font-size:.82rem; color:var(--sepia); width:80px; flex-shrink:0; }
 .mypage-row input {
-  flex:1; padding:.6rem .9rem; border:1px solid var(--border);
+  flex:1; min-width:0; padding:.6rem .9rem; border:1px solid var(--border);
   background:var(--cream); font-family:'DM Sans',sans-serif;
   font-size:.88rem; color:var(--ink); outline:none;
 }
@@ -1215,8 +1220,8 @@ window.switchPage = function(id) {
   // 관리자
   if (id === 'admin' && typeof loadAdminEvents==='function') setTimeout(loadAdminEvents, 200);
   if (id === 'admin' && typeof loadAdminUsers==='function') setTimeout(loadAdminUsers, 200);
-  // 마이페이지
-  if (id === 'mypage' && window._currentUser && typeof updateMypageUI==='function') {
+  // 마이페이지 (비로그인 상태면 로그인 안내 표시)
+  if (id === 'mypage' && typeof updateMypageUI==='function') {
     setTimeout(function(){ updateMypageUI(window._currentUser, window._currentRole||'user'); }, 100);
   }
 }
@@ -1529,6 +1534,15 @@ loadStyles();
 <div id="mypage" class="page">
   <div class="mypage-wrap">
     <h2>마이페이지</h2>
+    <!-- 비로그인 상태 안내 -->
+    <div id="mypageLogin" style="display:none;">
+      <div class="mypage-section" style="text-align:center;padding:2.5rem 1.5rem;">
+        <p style="font-size:.9rem;color:var(--sepia);margin-bottom:1.25rem;">로그인하고 프로필을 관리해보세요</p>
+        <button class="btn fill" onclick="window.openAuthModal&&window.openAuthModal()" style="padding:.6rem 1.6rem;">Google로 로그인</button>
+      </div>
+    </div>
+    <!-- 로그인 상태 프로필 -->
+    <div id="mypageContent">
     <div class="mypage-section">
       <h3>프로필</h3>
       <div class="mypage-row">
@@ -1558,6 +1572,7 @@ loadStyles();
       <p id="grantMsg" style="font-size:.78rem;color:var(--sepia);margin-top:.5rem;"></p>
     </div>
     <button onclick="signOutUser()" class="btn" style="color:var(--rust);border-color:var(--rust);">로그아웃</button>
+    </div>
   </div>
 </div>
 
@@ -1781,6 +1796,7 @@ function filterMapTag(el, tag) {
       window._currentUser = null;
       window._currentRole = 'user';
       updateNavUI(null, 'user');
+      updateMypageUI(null, 'user');
       if (document.getElementById('admin')?.classList.contains('active')) loadAdminUsers();
     }
   });
@@ -1811,6 +1827,15 @@ function filterMapTag(el, tag) {
   }
 
   function updateMypageUI(user, role) {
+    const loginBox = document.getElementById('mypageLogin');
+    const content = document.getElementById('mypageContent');
+    if (!user) {
+      if (loginBox) loginBox.style.display = 'block';
+      if (content) content.style.display = 'none';
+      return;
+    }
+    if (loginBox) loginBox.style.display = 'none';
+    if (content) content.style.display = 'block';
     const emailEl = document.getElementById('myEmail');
     const roleEl = document.getElementById('myRole');
     const adminSection = document.getElementById('adminSection');
@@ -1821,7 +1846,7 @@ function filterMapTag(el, tag) {
       roleEl.textContent = labels[role] || '일반유저';
       roleEl.className = `badge-role ${classes[role] || 'role-user'}`;
     }
-    if (adminSection && role === 'super_admin') adminSection.style.display = 'block';
+    if (adminSection) adminSection.style.display = role === 'super_admin' ? 'block' : 'none';
   }
 
   // ── 로그인 버튼 이벤트 리스너 ───────────────────────────────

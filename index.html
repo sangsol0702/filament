@@ -499,21 +499,10 @@ nav {
 footer { border-top:1px solid var(--border); padding:1.5rem 3rem; display:flex; justify-content:space-between; align-items:center; }
 footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',serif; font-style:italic; }
 </style>
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services"></script>
 </head>
 <body>
 
-<script>
-function openAuthModal() {
-  if (window._currentUser) { window.switchPage('mypage'); return; }
-  var modal = document.getElementById('authModal');
-  if(modal) { modal.style.display='flex'; modal.classList.add('open'); }
-}
-function closeAuthModal() {
-  var modal = document.getElementById('authModal');
-  if(modal) { modal.classList.remove('open'); modal.style.display='none'; }
-}
-</script>
+
 <nav>
   <a class="logo" href="#" onclick="window.switchPage('discover');return false;">FIL<em>A</em>MENT</a>
   <ul class="nav-links">
@@ -528,8 +517,8 @@ function closeAuthModal() {
     <span></span><span></span><span></span>
   </button>
   <div class="nav-cta" id="navCta">
-    <button class="btn" id="loginBtn" onclick="openAuthModal()">로그인</button>
-    <button class="btn fill" id="signupBtn" onclick="openAuthModal()">가입하기</button>
+    <button class="btn" id="loginBtn">로그인</button>
+    <button class="btn fill" id="signupBtn">가입하기</button>
   </div>
   <div class="nav-user-wrap" id="navUser" style="display:none;">
     <div id="navAvatar" onclick="toggleUserDropdown()"></div>
@@ -862,6 +851,16 @@ function closeAuthModal() {
   </div>
 </div>
 
+<!-- 카카오맵 SDK - 여기서만 로드 -->
+<script>
+(function(){
+  if(window.kakao && window.kakao.maps) return;
+  var s = document.createElement('script');
+  s.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=176727a680ed793b4f9bde730fdafec4&libraries=services&autoload=false';
+  s.onload = function(){ kakao.maps.load(function(){ window._kakaoLoaded=true; }); };
+  document.body.appendChild(s);
+})();
+</script>
 <!-- ══════════ MAP ══════════ -->
 <div id="map" class="page">
   <div style="max-width:1100px;margin:0 auto;padding:2rem 0 1rem;">
@@ -1500,6 +1499,7 @@ let geocoder = null;
 
 function initMap() {
   if (!document.getElementById('kakaoMap')) return;
+  if (!window._kakaoLoaded) { setTimeout(initMap, 200); return; }
   const container = document.getElementById('kakaoMap');
   const options = {
     center: new kakao.maps.LatLng(37.5563, 126.9236),
@@ -1736,6 +1736,29 @@ function filterMapTag(el, tag) {
     if (adminSection && role === 'super_admin') adminSection.style.display = 'block';
   }
 
+  // ── 로그인 버튼 이벤트 리스너 ───────────────────────────────
+  function openAuthModal() {
+    if (currentUser) { window.switchPage('mypage'); return; }
+    var modal = document.getElementById('authModal');
+    if(modal) { modal.style.display='flex'; modal.classList.add('open'); }
+  }
+  function closeAuthModal() {
+    var modal = document.getElementById('authModal');
+    if(modal) { modal.classList.remove('open'); modal.style.display='none'; }
+  }
+  window.closeAuthModal = closeAuthModal;
+
+  var loginBtn = document.getElementById('loginBtn');
+  var signupBtn = document.getElementById('signupBtn');
+  var closeBtn = document.querySelector('.auth-close');
+  if(loginBtn) loginBtn.addEventListener('click', openAuthModal);
+  if(signupBtn) signupBtn.addEventListener('click', openAuthModal);
+  if(closeBtn) closeBtn.addEventListener('click', closeAuthModal);
+
+  document.getElementById('authModal').addEventListener('click', function(e) {
+    if(e.target === document.getElementById('authModal')) closeAuthModal();
+  });
+
   // ── 구글 로그인 ──────────────────────────────────────────
   window.signInWithGoogle = async function() {
     try {
@@ -1799,10 +1822,7 @@ function filterMapTag(el, tag) {
     if (wrap && !wrap.contains(e.target)) closeUserDropdown();
   });
 
-  // 모달 함수는 외부 스크립트에서 정의됨
-  document.getElementById('authModal').addEventListener('click', e => {
-    if (e.target === document.getElementById('authModal')) window.closeAuthModal();
-  });
+  // 모달 이벤트는 위에서 처리됨
 
 // 마이페이지 UI 갱신은 통합 switchPage에서 처리
 </script>

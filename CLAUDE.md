@@ -25,7 +25,9 @@
 - 모듈 간 상태 공유는 `window._currentUser` / `window._currentRole` / `window._currentNickname` 전역으로 함 (Auth 모듈이 쓰고 커뮤니티 모듈이 읽음)
 
 ## 이벤트 신청 흐름
-- 신청은 **로그인 필수** (openEventModal/submitEvent 양쪽에서 막음). 문서에 `uid`와 `applicantEmail`을 박아둠
+- 신청은 **로그인 필수** (openEventModal/submitEvent 양쪽에서 막음). 문서에 `uid`를 박아둠
+- **이벤트 문서에 이메일·전화번호 등 개인정보를 절대 넣지 말 것.** 승인된 이벤트는 `status=='approved'` 규칙 때문에 비로그인 포함 누구나 전체 필드를 읽을 수 있음.
+  실제로 `applicantEmail`을 넣었다가 승인 시 공개되는 문제가 있어서 제거함. 관리자는 `uid`로 사용자 목록에서 신청자를 찾으면 됨
 - 마이페이지 "내 신청 현황"에서 본인 신청 건의 상태와 수정 요청 사유를 확인 — `where('uid','==',uid)` 하나만 쓰고 정렬은 클라이언트에서
 - **로그인 필수로 바꾸기 전에 신청된 옛날 이벤트는 `uid`가 없어서 "내 신청 현황"에 안 뜸** (관리자탭에서는 정상적으로 보임)
 

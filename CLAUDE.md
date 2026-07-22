@@ -11,7 +11,8 @@
 ## 기술 스택
 - 데이터: Google Sheets CSV export를 DB처럼 사용 (index.html 상단 `SHEET_ID` 상수, 시트명: `가게목록`, `스타일탐색`)
 - Firebase (projectId: filament-752a8)
-  - Firestore `events` 컬렉션 — 이벤트 신청/검수 (status: pending / approved / rejected)
+  - Firestore `events` 컬렉션 — 이벤트 신청/검수 (status: pending / approved / rejected / revision)
+    - `revision`(수정 요청)은 최종 상태가 아님 — 관리자탭에서 계속 승인·반려할 수 있고, 사유는 `revisionNote`에 저장
   - Firestore `users` 컬렉션 — 구글 로그인 유저, role: user / admin / super_admin
   - Firestore `posts` 컬렉션 — 커뮤니티 글 (uid, nickname, category, text, tags[], photo, likedBy[], createdAt)
   - Auth: Google 로그인 (signInWithPopup)
@@ -23,9 +24,25 @@
 - **중요**: module 스크립트 안의 함수는 반드시 `window.함수명 = 함수명`으로 노출해야 onclick 속성이나 switchPage의 typeof 체크에서 잡힘. 과거에 이거 빼먹어서 관리자탭이 "불러오는 중"에 멈추는 버그 있었음
 - 모듈 간 상태 공유는 `window._currentUser` / `window._currentRole` / `window._currentNickname` 전역으로 함 (Auth 모듈이 쓰고 커뮤니티 모듈이 읽음)
 
+## 이벤트 신청 흐름
+- 신청은 **로그인 필수** (openEventModal/submitEvent 양쪽에서 막음). 문서에 `uid`와 `applicantEmail`을 박아둠
+- 마이페이지 "내 신청 현황"에서 본인 신청 건의 상태와 수정 요청 사유를 확인 — `where('uid','==',uid)` 하나만 쓰고 정렬은 클라이언트에서
+- **로그인 필수로 바꾸기 전에 신청된 옛날 이벤트는 `uid`가 없어서 "내 신청 현황"에 안 뜸** (관리자탭에서는 정상적으로 보임)
+
+## 관리자탭
+- 상단 통계 4칸(검수 대기·승인 완료·반려·수정 요청)은 전부 `events`를 실제로 세서 채움 — 하드코딩 숫자였던 7/142/18/3은 제거됨
+- 브랜드 입점·편집샵 등록 검수 카드는 목업이라 삭제함. 지금 검수 대상은 **이벤트 신청뿐**
+- 관리자가 아니면 events 전체 조회가 규칙에 막힘 → 통계를 0으로 표시하지 말고 `—`로 둘 것 (0건과 "못 읽음"은 다름)
+- 상태 변경 후에는 DOM만 갈아끼우지 말고 `loadAdminEvents()`를 다시 호출 — 안 그러면 상단 통계가 옛날 숫자로 남음
+
 ## 커뮤니티 (posts)
 - 사이드바(카테고리·인기태그·활발한멤버)는 전부 목업이라 삭제함. 카테고리는 피드 상단 `.cat-chip` 필터로 대체 — 개수는 실제 글에서 셈
 - 글 목록은 `orderBy('createdAt','desc') + limit(50)` 하나만 — 카테고리 필터는 클라이언트에서 처리(복합 인덱스 회피)
+- 제목(`title`)은 **선택 입력** 60자. 없으면 카드에 제목 줄을 아예 안 그림. 제목·내용·사진이 전부 비면 게시 거부
+- **검색도 클라이언트 전용** — Firestore는 부분 문자열 검색이 안 됨. 불러온 50건의 title·text·tags·nickname을 훑음.
+  50건을 채우면 "최근 50건 안에서 찾았어요"를 같이 표시해서 전체 검색인 척하지 않음. 제대로 하려면 Algolia 같은 검색 서비스가 필요
+- 검색어 강조 `hl()`은 **반드시 `esc()` 먼저 하고 그 결과에 `<mark>`만 끼워넣음**. 검색어에 `&<>"'` 가 있으면 엔티티(`&amp;`) 중간을 깨뜨릴 수 있어 강조를 생략함. 정규식 특수문자도 이스케이프해서 리터럴로 취급
+- 검색과 카테고리는 AND. 카테고리 칩 개수도 검색 결과 기준으로 다시 셈 ("3건"인데 눌러보니 0건인 상황 방지)
 - **사진 첨부는 Storage를 안 씀**. 캔버스로 긴 변 1000px·JPEG 0.72로 재압축해 dataURL을 Firestore 문서에 그대로 넣음 (문서 상한 1MiB라 900KB 넘으면 거부). 나중에 트래픽 늘면 Storage로 옮기는 게 맞음
 - dataURL은 `safeUrl()`이 http/https만 허용해서 통과 못 함 → 커뮤니티 모듈 안의 `safeImg()`가 `data:image/(jpeg|png|webp);base64,...` 만 허용
 - 닉네임은 글 문서에 복사해서 저장(읽을 때 users 조인 안 하려고). 그래서 `saveNickname()`이 `syncMyPostNicknames()`를 불러 기존 글 닉네임까지 갱신함

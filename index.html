@@ -572,8 +572,8 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
     </a>
   </nav>
   <div class="drawer-footer">
-    <button class="btn" style="width:100%;margin-bottom:.5rem;">로그인</button>
-    <button class="btn fill" style="width:100%;">가입하기</button>
+    <button class="btn" style="width:100%;margin-bottom:.5rem;" onclick="toggleMenu();window.openAuthModal&&window.openAuthModal();">로그인</button>
+    <button class="btn fill" style="width:100%;" onclick="toggleMenu();window.openAuthModal&&window.openAuthModal();">가입하기</button>
   </div>
 </div>
 
@@ -883,9 +883,10 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
   <!-- 지도 + 사이드패널 -->
   <div class="map-layout" style="max-width:1100px;margin:0 auto;border:1px solid var(--border);">
     <div style="display:grid;grid-template-columns:1fr 320px;" class="map-inner">
-    <div id="kakaoMap" style="height:480px;"></div>
-    <div id="mapPanel" style="background:var(--warm);border-left:1px solid var(--border);overflow-y:auto;height:480px;padding:1.25rem;">
-      <p style="font-size:.82rem;color:var(--dusty);font-family:'IM Fell English',serif;font-style:italic;text-align:center;margin-top:2rem;">핀을 클릭하면<br>가게 정보가 표시됩니다</p>
+      <div id="kakaoMap" style="height:480px;"></div>
+      <div id="mapPanel" style="background:var(--warm);border-left:1px solid var(--border);overflow-y:auto;height:480px;padding:1.25rem;">
+        <p style="font-size:.82rem;color:var(--dusty);font-family:'IM Fell English',serif;font-style:italic;text-align:center;margin-top:2rem;">핀을 클릭하면<br>가게 정보가 표시됩니다</p>
+      </div>
     </div>
   </div>
 
@@ -975,6 +976,18 @@ function parseCSV(text) {
     headers.forEach((h,i)=> obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
   }).filter(r => Object.values(r).some(v=>v));
+}
+
+// ── XSS 방지 헬퍼 (ejj EJJ) ──────────────────────────────
+// 사용자 입력을 innerHTML에 넣기 전 반드시 esc()로 감싼다
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// http/https로 시작하는 URL만 허용 (javascript: 등 차단)
+function safeUrl(u) {
+  u = String(u || '').trim();
+  return /^https?:\/\//i.test(u) ? u : '';
 }
 
 // ── DATA ─────────────────────────────────────────────────
@@ -1250,19 +1263,24 @@ loadStyles();
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // id → 이벤트 데이터 캐시 (onclick에 데이터 직접 안 박기 위함)
+  const eventsById = {};
+
   // ── 이벤트 불러오기 ──────────────────────────────────────
+  // where 하나만 사용 → Firestore 복합 인덱스 불필요.
+  // 종료일 필터와 정렬은 클라이언트에서 처리 (이벤트 수가 적어서 충분)
   async function loadEvents() {
     try {
-      const now = Timestamp.now();
-      const q = query(
-        collection(db, 'events'),
-        where('status', '==', 'approved'),
-        where('endDate', '>=', now),
-        orderBy('endDate')
-      );
+      const q = query(collection(db, 'events'), where('status', '==', 'approved'));
       const snapshot = await getDocs(q);
+      const now = new Date();
       const events = [];
-      snapshot.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+      snapshot.forEach(d => {
+        const ev = { id: d.id, ...d.data() };
+        eventsById[ev.id] = ev;
+        if (ev.endDate?.toDate?.() >= now) events.push(ev);
+      });
+      events.sort((a, b) => a.endDate.toDate() - b.endDate.toDate());
       renderEvents(events);
       renderEventPreview(events);
     } catch(e) {
@@ -1299,22 +1317,23 @@ loadStyles();
     const start = e.startDate?.toDate?.()?.toLocaleDateString('ko-KR') || '';
     const end = e.endDate?.toDate?.()?.toLocaleDateString('ko-KR') || '';
     const dday = Math.ceil((e.endDate?.toDate() - new Date()) / (1000*60*60*24));
+    const link = safeUrl(e.link); // http(s)만 허용
     return `
       <div class="event-card" onmouseenter="this.querySelector('.event-hidden').style.opacity='1'" onmouseleave="this.querySelector('.event-hidden').style.opacity='0'">
         <div class="event-card-inner">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
-            <span class="card-type" style="color:var(--rust);border-color:var(--rust);">${e.type || '이벤트'}</span>
+            <span class="card-type" style="color:var(--rust);border-color:var(--rust);">${esc(e.type) || '이벤트'}</span>
             <span style="font-size:.72rem;color:var(--rust);font-weight:500;">D-${dday}</span>
           </div>
-          <div class="card-name" style="font-size:1.05rem;margin-bottom:.4rem;">${e.shopName || ''}</div>
-          <div style="font-size:.9rem;font-weight:500;color:var(--ink);margin-bottom:.5rem;">${e.title || ''}</div>
-          <div style="font-size:.78rem;color:var(--sepia);margin-bottom:.75rem;line-height:1.5;">${e.description || ''}</div>
+          <div class="card-name" style="font-size:1.05rem;margin-bottom:.4rem;">${esc(e.shopName)}</div>
+          <div style="font-size:.9rem;font-weight:500;color:var(--ink);margin-bottom:.5rem;">${esc(e.title)}</div>
+          <div style="font-size:.78rem;color:var(--sepia);margin-bottom:.75rem;line-height:1.5;">${esc(e.description)}</div>
           <div style="font-size:.72rem;color:var(--dusty);">📅 ${start} ~ ${end}</div>
-          ${e.address ? `<div style="font-size:.72rem;color:var(--sepia);margin-top:.35rem;">📍 ${e.address}</div>` : ''}
-          ${e.link ? `<a href="${e.link}" target="_blank" class="card-link" style="font-size:.75rem;margin-top:.5rem;display:inline-block;">온라인 바로가기 →</a>` : ''}
+          ${e.address ? `<div style="font-size:.72rem;color:var(--sepia);margin-top:.35rem;">📍 ${esc(e.address)}</div>` : ''}
+          ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener" class="card-link" style="font-size:.75rem;margin-top:.5rem;display:inline-block;">온라인 바로가기 →</a>` : ''}
         </div>
         <div class="event-hidden" style="opacity:0;transition:opacity .2s;position:absolute;bottom:0;left:0;right:0;padding:.75rem;background:var(--ink);display:flex;gap:.5rem;">
-          <button onclick="openEventModal('${e.shopName || ''}')" style="flex:1;padding:.4rem;background:transparent;border:1px solid var(--cream);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer;">이벤트 신청</button>
+          <button onclick="openEventModalById('${e.id}')" style="flex:1;padding:.4rem;background:transparent;border:1px solid var(--cream);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.75rem;cursor:pointer;">이벤트 신청</button>
         </div>
       </div>`;
   }
@@ -1323,6 +1342,12 @@ loadStyles();
   window.openEventModal = function(shopName = '') {
     document.getElementById('modalShopName').value = shopName;
     document.getElementById('eventModal').classList.add('open');
+  }
+
+  // 카드에서 열 때는 id로 조회 (가게명을 onclick 문자열에 직접 넣지 않음)
+  window.openEventModalById = function(id) {
+    const ev = eventsById[id];
+    window.openEventModal(ev ? (ev.shopName || '') : '');
   }
 
   window.closeEventModal = function() {
@@ -1393,13 +1418,13 @@ loadStyles();
       return `
         <div class="review" style="margin-bottom:1px;">
           <div class="review-top">
-            <div><h4>${e.shopName} — ${e.title}</h4><span>${e.startDate?.toDate?.()?.toLocaleDateString('ko-KR')} ~ ${e.endDate?.toDate?.()?.toLocaleDateString('ko-KR')}</span></div>
+            <div><h4>${esc(e.shopName)} — ${esc(e.title)}</h4><span>${e.startDate?.toDate?.()?.toLocaleDateString('ko-KR')} ~ ${e.endDate?.toDate?.()?.toLocaleDateString('ko-KR')}</span></div>
             <span class="badge ${statusClass}" id="eb-${e.id}">${statusLabel}</span>
           </div>
           <div class="review-body">
-            <p>${e.description || ''}</p>
-            ${e.address ? `<div style="font-size:.8rem;color:var(--sepia);">📍 ${e.address}</div>` : ''}
-            ${e.link ? `<div style="font-size:.8rem;color:var(--sepia);">🔗 ${e.link}</div>` : ''}
+            <p>${esc(e.description)}</p>
+            ${e.address ? `<div style="font-size:.8rem;color:var(--sepia);">📍 ${esc(e.address)}</div>` : ''}
+            ${e.link ? `<div style="font-size:.8rem;color:var(--sepia);">🔗 ${esc(e.link)}</div>` : ''}
           </div>
           <div class="review-acts" id="era-${e.id}">
             ${e.status === 'pending' ? `
@@ -1429,7 +1454,10 @@ loadStyles();
     document.getElementById('era-' + id).innerHTML = '<span style="font-size:.82rem;color:#8B2018;">✗ 반려 처리되었습니다</span>';
   }
 
-  // 이벤트 로드는 통합 switchPage에서 처리
+  // switchPage 등 모듈 밖(전역)에서 호출할 수 있게 노출
+  // (이게 없으면 typeof loadAdminEvents 체크가 항상 false → 관리자 목록이 영원히 "불러오는 중")
+  window.loadEvents = loadEvents;
+  window.loadAdminEvents = loadAdminEvents;
 
   // 초기 로드
   loadEvents();
@@ -1522,12 +1550,15 @@ function renderMapShops(list) {
     ? list.filter(s => (s['태그']||'').split(',').map(t=>t.trim()).includes(activeMapTag))
     : list;
 
-  shopList.innerHTML = filtered.map(s => {
+  // onclick에 문자열을 직접 넣으면 따옴표 이스케이프가 깨지므로 인덱스 참조 방식 사용
+  window._mapFiltered = filtered;
+
+  shopList.innerHTML = filtered.map((s, i) => {
     const tags = (s['태그']||'').split(',').map(t=>t.trim()).filter(Boolean);
     const logo = s['로고'] ? driveThumb(s['로고']) : '';
     const initial = (s['가게명']||'?')[0];
     return `
-      <div class="brand-card" onclick="focusShop('${(s['링크2']||'').replace(/'/g,"\'")}','${(s['가게명']||'').replace(/'/g,"\'")}')">
+      <div class="brand-card" onclick="focusShopByIdx(${i})">
         <div class="card-top">
           <div class="card-initial" style="${logo ? 'background:white;padding:0;overflow:hidden;' : ''}">
             ${logo ? `<img src="${logo}" loading="lazy" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentNode.innerHTML='${initial}';this.parentNode.style=''">` : initial}
@@ -1588,7 +1619,13 @@ function showMapPanel(s) {
   `;
 }
 
-function focusShop(addr, name) {
+// 목록 카드 클릭 → 인덱스로 가게를 찾아 지도 이동
+function focusShopByIdx(i) {
+  const s = (window._mapFiltered || [])[i];
+  if (s) focusShop(s['링크2'] || '');
+}
+
+function focusShop(addr) {
   if (!geocoder || !addr) return;
   geocoder.addressSearch(addr, function(result, status) {
     if (status === kakao.maps.services.Status.OK) {
@@ -1683,16 +1720,18 @@ function filterMapTag(el, tag) {
         currentRole = 'user';
       } else {
         currentRole = userSnap.data().role || 'user';
-      window._currentRole = currentRole;
         // 닉네임 인풋 채우기
         const ni = document.getElementById('nicknameInput');
         if (ni) ni.value = userSnap.data().nickname || '';
       }
+      window._currentRole = currentRole; // 신규 유저 케이스에서도 항상 갱신되도록 if/else 밖으로 이동
       updateNavUI(user, currentRole);
       updateMypageUI(user, currentRole);
     } else {
       currentUser = null;
       currentRole = 'user';
+      window._currentUser = null;
+      window._currentRole = 'user';
       updateNavUI(null, 'user');
     }
   });
@@ -1746,7 +1785,10 @@ function filterMapTag(el, tag) {
     var modal = document.getElementById('authModal');
     if(modal) { modal.classList.remove('open'); modal.style.display='none'; }
   }
+  // 드로어 버튼, switchPage 등 전역에서 쓸 수 있게 노출
+  window.openAuthModal = openAuthModal;
   window.closeAuthModal = closeAuthModal;
+  window.updateMypageUI = updateMypageUI;
 
   var loginBtn = document.getElementById('loginBtn');
   var signupBtn = document.getElementById('signupBtn');

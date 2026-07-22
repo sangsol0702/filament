@@ -191,19 +191,38 @@ nav {
 .overlay-footer p { font-size:.82rem; color:var(--sepia); font-weight:300; }
 
 /* ── COMMUNITY ── */
-.community-wrap { display:grid; grid-template-columns:260px 1fr; max-width:1100px; margin:0 auto; border-top:1px solid var(--border); }
-.sidebar { border-right:1px solid var(--border); padding:1.75rem 1.5rem; }
-.sidebar h3 { font-family:'Playfair Display',serif; font-size:.9rem; margin-bottom:.9rem; }
-.sidebar-sect { margin-bottom:1.75rem; }
-.sidebar ul { list-style:none; }
-.sidebar li { padding:.45rem 0; border-bottom:1px solid var(--border); font-size:.82rem; color:var(--sepia); cursor:pointer; display:flex; justify-content:space-between; }
-.sidebar li:hover { color:var(--ink); }
-.sidebar li span { font-size:.7rem; background:var(--cream); border:1px solid var(--border); padding:.1rem .4rem; color:var(--dusty); }
+.community-wrap { max-width:720px; margin:0 auto; border-top:1px solid var(--border); }
 .feed { padding:1.75rem 2rem; }
 .composer { border:1px solid var(--border); background:var(--warm); padding:1.1rem; margin-bottom:1.5rem; }
 .composer textarea { width:100%; border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:.88rem; color:var(--ink); resize:none; outline:none; min-height:72px; line-height:1.65; }
 .composer textarea::placeholder { color:var(--dusty); }
 .composer-foot { display:flex; justify-content:space-between; align-items:center; margin-top:.65rem; padding-top:.65rem; border-top:1px solid var(--border); font-size:.76rem; color:var(--dusty); }
+/* 글쓰기 폼 (ejj EJJ) */
+.composer-login { text-align:center; padding:.75rem 0; }
+.composer-login p { font-size:.85rem; color:var(--sepia); margin-bottom:.85rem; }
+.composer-select, .composer-tagin {
+  font-family:'DM Sans',sans-serif; font-size:.8rem; color:var(--ink);
+  background:var(--cream); border:1px solid var(--border); padding:.42rem .6rem; outline:none;
+}
+.composer-select { margin-bottom:.6rem; }
+.composer-tagin { width:100%; margin-top:.5rem; }
+.composer-tagin::placeholder { color:var(--dusty); }
+.composer-attach { cursor:pointer; color:var(--sepia); transition:color .2s; }
+.composer-attach:hover { color:var(--rust); }
+.photo-preview { position:relative; margin-top:.7rem; }
+.photo-preview img { width:100%; max-height:320px; object-fit:cover; display:block; border:1px solid var(--border); }
+.photo-remove {
+  position:absolute; top:.5rem; right:.5rem; font-family:'DM Sans',sans-serif; font-size:.72rem;
+  background:var(--warm); border:1px solid var(--border); color:var(--rust); padding:.25rem .6rem; cursor:pointer;
+}
+/* 카테고리 필터 (사이드바 대체) */
+.cat-filter { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1.1rem; }
+.cat-chip {
+  font-family:'DM Sans',sans-serif; font-size:.75rem; color:var(--sepia); cursor:pointer;
+  background:transparent; border:1px solid var(--border); padding:.28rem .75rem; transition:all .2s;
+}
+.cat-chip:hover { color:var(--ink); }
+.cat-chip.active { background:var(--sepia); border-color:var(--sepia); color:var(--cream); }
 .post { border:1px solid var(--border); background:var(--warm); margin-bottom:1px; }
 .post-head { display:flex; align-items:center; gap:.7rem; padding:.9rem 1.2rem; border-bottom:1px solid var(--border); }
 .avatar { width:34px; height:34px; background:var(--sepia); color:var(--cream); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:.85rem; flex-shrink:0; }
@@ -218,6 +237,34 @@ nav {
 .post-foot { display:flex; gap:1.25rem; padding:.65rem 1.2rem; border-top:1px solid var(--border); }
 .post-act { font-size:.76rem; color:var(--sepia); cursor:pointer; display:flex; align-items:center; gap:.35rem; background:none; border:none; font-family:'DM Sans',sans-serif; transition:color .2s; }
 .post-act:hover { color:var(--rust); }
+.post-act.liked { color:var(--rust); }
+.post-act.danger { margin-left:auto; color:var(--dusty); }
+.post-act.danger:hover { color:var(--rust); }
+.post-photo { width:100%; display:block; margin-bottom:.9rem; border:1px solid var(--border); }
+.post-body p:last-child { margin-bottom:0; }
+/* 댓글 (ejj EJJ) */
+.comments { border-top:1px solid var(--border); background:var(--cream); padding:.9rem 1.2rem; }
+.comment { display:flex; gap:.6rem; padding:.55rem 0; border-bottom:1px solid var(--border); }
+.comment:last-of-type { border-bottom:none; }
+.comment-avatar {
+  width:26px; height:26px; background:var(--dusty); color:var(--cream); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Playfair Display',serif; font-size:.7rem;
+}
+.comment-main { flex:1; min-width:0; }
+.comment-meta { display:flex; align-items:center; gap:.5rem; margin-bottom:.15rem; }
+.comment-name { font-size:.78rem; font-weight:500; }
+.comment-time { font-size:.68rem; color:var(--dusty); }
+.comment-del { margin-left:auto; font-size:.68rem; color:var(--dusty); background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.comment-del:hover { color:var(--rust); }
+.comment-text { font-size:.8rem; line-height:1.6; color:var(--ink); font-weight:300; word-break:break-word; }
+.comment-form { display:flex; gap:.5rem; align-items:flex-start; margin-top:.7rem; }
+.comment-input {
+  flex:1; font-family:'DM Sans',sans-serif; font-size:.8rem; color:var(--ink); line-height:1.55;
+  background:var(--warm); border:1px solid var(--border); padding:.45rem .6rem; outline:none; resize:none; min-height:38px;
+}
+.comment-input::placeholder { color:var(--dusty); }
+.comment-empty { font-size:.78rem; color:var(--dusty); padding:.3rem 0; }
 
 /* ── ADMIN ── */
 .admin-wrap { max-width:860px; margin:0 auto; padding:2rem 3rem; }
@@ -364,8 +411,6 @@ nav {
   .overlay-footer { flex-direction:column; gap:.75rem; align-items:flex-start; }
 
   /* COMMUNITY */
-  .community-wrap { grid-template-columns:1fr; }
-  .sidebar { display:none; }
   .feed { padding:1rem; }
 
   /* ADMIN */
@@ -719,98 +764,46 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
 <!-- ══════════ COMMUNITY ══════════ -->
 <div id="community" class="page">
   <div class="community-wrap">
-    <aside class="sidebar">
-      <div class="sidebar-sect">
-        <h3>카테고리</h3>
-        <ul>
-          <li>🧥 OOTD <span>284</span></li>
-          <li>❓ 옷 정보 문의 <span>137</span></li>
-          <li>🏪 픽업샵 후기 <span>89</span></li>
-          <li>🔍 이 옷 어디꺼? <span>62</span></li>
-          <li>📦 구매 후기 <span>44</span></li>
-        </ul>
-      </div>
-      <div class="sidebar-sect">
-        <h3>인기 태그</h3>
-        <ul>
-          <li>#빈티지 <span>501</span></li>
-          <li>#아메카지 <span>328</span></li>
-          <li>#워크웨어 <span>214</span></li>
-          <li>#시티보이 <span>198</span></li>
-          <li>#올드스쿨 <span>176</span></li>
-        </ul>
-      </div>
-      <div class="sidebar-sect">
-        <h3>활발한 멤버</h3>
-        <ul>
-          <li>@dusty_vinyl</li>
-          <li>@faded_kodak</li>
-          <li>@worn_edges</li>
-          <li>@corduroy88</li>
-        </ul>
-      </div>
-    </aside>
     <main class="feed">
+
+      <!-- 글쓰기 (ejj EJJ) -->
       <div class="composer">
-        <textarea placeholder="오늘의 착장을 공유하거나, 옷 정보를 물어보세요..."></textarea>
-        <div class="composer-foot">
-          <span>📎 사진 첨부 &nbsp;|&nbsp; # 태그</span>
-          <button class="btn fill" style="padding:.38rem .95rem;font-size:.76rem;">게시하기</button>
+        <!-- 비로그인: 로그인 유도 -->
+        <div id="composerLogin" class="composer-login">
+          <p>로그인하면 글을 남길 수 있어요.</p>
+          <button class="btn fill" onclick="window.openAuthModal&&window.openAuthModal()" style="padding:.5rem 1.4rem;">Google로 로그인</button>
         </div>
-      </div>
-      <div class="post">
-        <div class="post-head">
-          <div class="avatar">D</div>
-          <div><div class="post-name">dusty_vinyl</div><div class="post-time">2시간 전</div></div>
-          <span class="cat-label">OOTD</span>
-        </div>
-        <div class="post-body">
-          <div class="post-img">📷</div>
-          <div class="ootd-tags">
-            <span class="ootd-tag">🧥 Levi's 70s Trucker</span>
-            <span class="ootd-tag">👕 챔피언 리버스위브</span>
-            <span class="ootd-tag">👖 Dickies 874</span>
-            <span class="ootd-tag">👟 New Balance 990</span>
+        <!-- 로그인: 작성 폼 -->
+        <div id="composerForm" style="display:none;">
+          <select id="postCategory" class="composer-select">
+            <option value="OOTD">🧥 OOTD</option>
+            <option value="옷 정보 문의">❓ 옷 정보 문의</option>
+            <option value="픽업샵 후기">🏪 픽업샵 후기</option>
+            <option value="이 옷 어디꺼?">🔍 이 옷 어디꺼?</option>
+            <option value="구매 후기">📦 구매 후기</option>
+          </select>
+          <textarea id="postText" maxlength="1000" placeholder="오늘의 착장을 공유하거나, 옷 정보를 물어보세요..."></textarea>
+          <input type="text" id="postTags" class="composer-tagin" maxlength="80" placeholder="태그 — 쉼표로 구분 (예: 빈티지, 워크웨어) · 최대 5개">
+          <div class="photo-preview" id="postPhotoPreview" style="display:none;">
+            <img id="postPhotoImg" alt="첨부한 사진 미리보기">
+            <button type="button" class="photo-remove" onclick="clearPostPhoto()">사진 삭제</button>
           </div>
-          <p>오늘 날씨가 딱 트러커자켓 꺼낼 날씨 ☁️ 전부 편집샵 한 곳에서 득템했어요.</p>
-        </div>
-        <div class="post-foot">
-          <button class="post-act">♥ 128</button>
-          <button class="post-act">💬 34</button>
-          <button class="post-act">🔖 저장</button>
-        </div>
-      </div>
-      <div class="post">
-        <div class="post-head">
-          <div class="avatar" style="background:var(--rust)">F</div>
-          <div><div class="post-name">faded_kodak</div><div class="post-time">5시간 전</div></div>
-          <span class="cat-label">이 옷 어디꺼?</span>
-        </div>
-        <div class="post-body">
-          <p>카라 눕혀진 코듀로이 셔츠 파는 곳 아시는 분? 80년대 느낌에 머스타드나 테라코타 계열이면 좋겠어요. 예산 5~10만원.</p>
-          <div class="ootd-tags"><span class="ootd-tag">#코듀로이</span><span class="ootd-tag">#80s빈티지</span><span class="ootd-tag">#머스타드</span></div>
-        </div>
-        <div class="post-foot">
-          <button class="post-act">♥ 47</button>
-          <button class="post-act">💬 21</button>
-          <button class="post-act">🔖 저장</button>
+          <div class="composer-foot">
+            <label class="composer-attach">📎 사진 첨부
+              <input type="file" id="postPhotoInput" accept="image/*" onchange="handlePostPhoto(event)" hidden>
+            </label>
+            <button class="btn fill" id="postSubmitBtn" onclick="submitPost()" style="padding:.38rem .95rem;font-size:.76rem;">게시하기</button>
+          </div>
+          <p id="postMsg" style="font-size:.76rem;color:var(--dusty);margin-top:.5rem;"></p>
         </div>
       </div>
-      <div class="post">
-        <div class="post-head">
-          <div class="avatar" style="background:var(--sage)">W</div>
-          <div><div class="post-name">worn_edges</div><div class="post-time">어제</div></div>
-          <span class="cat-label">픽업샵 후기</span>
-        </div>
-        <div class="post-body">
-          <p>홍대 레드우드 편집샵 다녀왔어요. 빈티지 워크웨어 위주고 사장님이 직접 소싱한 데드스톡 위주라 퀄리티가 진짜... 찐 빈티지 좋아하시는 분들 강추입니다.</p>
-        </div>
-        <div class="post-foot">
-          <button class="post-act">♥ 93</button>
-          <button class="post-act">💬 15</button>
-          <button class="post-act">🔖 저장</button>
-        </div>
-      </div>
+
+      <!-- 카테고리 필터 (클라이언트에서 걸러냄) -->
+      <div class="cat-filter" id="catFilter"></div>
+
+      <!-- 글 목록 -->
+      <div id="postFeed"><div class="empty-state">글을 불러오는 중…</div></div>
+
     </main>
   </div>
 </div>
@@ -1217,6 +1210,11 @@ window.switchPage = function(id) {
   }
   // 이벤트
   if (id === 'events' && typeof loadEvents==='function') setTimeout(loadEvents, 200);
+  // 커뮤니티
+  if (id === 'community') {
+    if (typeof window.refreshComposer==='function') window.refreshComposer();
+    if (typeof window.loadPosts==='function') setTimeout(window.loadPosts, 200);
+  }
   // 관리자
   if (id === 'admin' && typeof loadAdminEvents==='function') setTimeout(loadAdminEvents, 200);
   if (id === 'admin' && typeof loadAdminUsers==='function') setTimeout(loadAdminUsers, 200);
@@ -1562,7 +1560,9 @@ loadStyles();
     <div class="mypage-section" id="adminSection" style="display:none;">
       <h3>관리자 권한 부여</h3>
       <div class="mypage-row">
-        <input type="email" id="grantEmail" placeholder="권한 부여할 이메일" style="flex:1;">
+        <select id="grantUser" style="flex:1;padding:.6rem .9rem;border:1px solid var(--border);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:.82rem;">
+          <option value="">사용자를 불러오는 중…</option>
+        </select>
         <select id="grantRole" style="padding:.6rem .9rem;border:1px solid var(--border);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:.82rem;">
           <option value="admin">관리자</option>
           <option value="user">일반유저</option>
@@ -1779,15 +1779,18 @@ function filterMapTag(el, tag) {
           createdAt: new Date()
         });
         currentRole = 'user';
+        window._currentNickname = user.displayName || '';
       } else {
         currentRole = userSnap.data().role || 'user';
         // 닉네임 인풋 채우기
         const ni = document.getElementById('nicknameInput');
         if (ni) ni.value = userSnap.data().nickname || '';
+        window._currentNickname = userSnap.data().nickname || '';
       }
       window._currentRole = currentRole; // 신규 유저 케이스에서도 항상 갱신되도록 if/else 밖으로 이동
       updateNavUI(user, currentRole);
       updateMypageUI(user, currentRole);
+      if (typeof window.refreshComposer === 'function') window.refreshComposer();
       // 관리자탭을 보고 있는 상태에서 로그인이 완료되면 사용자 목록 갱신
       if (document.getElementById('admin')?.classList.contains('active')) loadAdminUsers();
     } else {
@@ -1795,8 +1798,10 @@ function filterMapTag(el, tag) {
       currentRole = 'user';
       window._currentUser = null;
       window._currentRole = 'user';
+      window._currentNickname = '';
       updateNavUI(null, 'user');
       updateMypageUI(null, 'user');
+      if (typeof window.refreshComposer === 'function') window.refreshComposer();
       if (document.getElementById('admin')?.classList.contains('active')) loadAdminUsers();
     }
   });
@@ -1846,7 +1851,10 @@ function filterMapTag(el, tag) {
       roleEl.textContent = labels[role] || '일반유저';
       roleEl.className = `badge-role ${classes[role] || 'role-user'}`;
     }
-    if (adminSection) adminSection.style.display = role === 'super_admin' ? 'block' : 'none';
+    if (adminSection) {
+      adminSection.style.display = role === 'super_admin' ? 'block' : 'none';
+      if (role === 'super_admin') loadGrantUserOptions();
+    }
   }
 
   // ── 로그인 버튼 이벤트 리스너 ───────────────────────────────
@@ -1906,22 +1914,63 @@ function filterMapTag(el, tag) {
     if (duplicate) { alert('이미 사용 중인 닉네임이에요.'); return; }
 
     await updateDoc(doc(db, 'users', currentUser.uid), { nickname });
+    window._currentNickname = nickname;
+    // 이미 쓴 글에 박혀 있는 닉네임도 같이 갱신 (글은 닉네임을 복사해서 저장하므로)
+    if (typeof window.syncMyPostNicknames === 'function') window.syncMyPostNicknames(nickname);
     alert('닉네임이 저장됐어요!');
   }
+
+  // ── 권한 부여 드롭다운 채우기 (닉네임 기준) ───────────────
+  // 이메일을 외우거나 타이핑할 필요 없이 닉네임으로 고른다.
+  // 본인·최고관리자는 목록에서 제외 (스스로 강등하거나 최고관리자를 건드리는 사고 방지)
+  async function loadGrantUserOptions() {
+    const sel = document.getElementById('grantUser');
+    if (!sel || currentRole !== 'super_admin') return;
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const users = [];
+      snap.forEach(d => {
+        const u = { uid: d.id, ...d.data() };
+        if (u.uid === currentUser?.uid) return;
+        if ((u.role || 'user') === 'super_admin') return;
+        users.push(u);
+      });
+      users.sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
+      if (!users.length) {
+        sel.innerHTML = '<option value="">권한을 바꿀 사용자가 없어요</option>';
+        return;
+      }
+      const labels = { admin: '관리자', user: '일반유저' };
+      sel.innerHTML = '<option value="">— 사용자 선택 —</option>' + users.map(u => {
+        const nick = u.nickname || '(닉네임 없음)';
+        const cur = labels[u.role || 'user'] || '일반유저';
+        return `<option value="${esc(u.uid)}">${esc(nick)} · 현재 ${cur}</option>`;
+      }).join('');
+    } catch(e) {
+      console.error('사용자 목록 로드 실패:', e);
+      sel.innerHTML = '<option value="">사용자를 불러오지 못했어요</option>';
+    }
+  }
+  window.loadGrantUserOptions = loadGrantUserOptions;
 
   // ── 권한 부여 (최고관리자만) ─────────────────────────────
   window.grantRole = async function() {
     if (currentRole !== 'super_admin') { alert('권한이 없습니다.'); return; }
-    const email = document.getElementById('grantEmail').value.trim();
+    const sel = document.getElementById('grantUser');
+    const uid = sel.value;
     const role = document.getElementById('grantRole').value;
-    if (!email) { alert('이메일을 입력해주세요.'); return; }
+    if (!uid) { alert('사용자를 선택해주세요.'); return; }
 
-    const q = query(collection(db, 'users'), where('email', '==', email));
-    const snap = await getDocs(q);
-    if (snap.empty) { document.getElementById('grantMsg').textContent = '해당 이메일의 유저를 찾을 수 없어요.'; return; }
-
-    await updateDoc(doc(db, 'users', snap.docs[0].id), { role });
-    document.getElementById('grantMsg').textContent = `✓ ${email} 에게 ${role === 'admin' ? '관리자' : '일반유저'} 권한을 부여했어요.`;
+    const nickname = sel.options[sel.selectedIndex].text.split(' · ')[0];
+    try {
+      await updateDoc(doc(db, 'users', uid), { role });
+      document.getElementById('grantMsg').textContent = `✓ ${nickname} 에게 ${role === 'admin' ? '관리자' : '일반유저'} 권한을 부여했어요.`;
+      loadGrantUserOptions();               // 현재 권한 표시 갱신
+      if (document.getElementById('admin')?.classList.contains('active')) loadAdminUsers();
+    } catch(e) {
+      console.error(e);
+      document.getElementById('grantMsg').textContent = '권한 변경에 실패했어요.';
+    }
   }
 
   // ── 관리자탭: 사용자 권한 관리 (최고관리자 전용) ──────────
@@ -2017,6 +2066,462 @@ function filterMapTag(el, tag) {
 
 
 
+
+
+<!-- ══════════ COMMUNITY POSTS (Firestore) ══════════ -->
+<script type="module">
+  import { getApps, initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import {
+    getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc,
+    query, where, orderBy, limit, arrayUnion, arrayRemove, serverTimestamp, increment
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsN9gBDRIxymWLTSsBZGOBoNvChKsiCaI",
+    authDomain: "filament-752a8.firebaseapp.com",
+    projectId: "filament-752a8",
+    storageBucket: "filament-752a8.firebasestorage.app",
+    messagingSenderId: "467566783358",
+    appId: "1:467566783358:web:01523cd2e9e43acda5612f"
+  };
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const CATEGORIES = ['OOTD', '옷 정보 문의', '픽업샵 후기', '이 옷 어디꺼?', '구매 후기'];
+  const CAT_ICON = { 'OOTD':'🧥', '옷 정보 문의':'❓', '픽업샵 후기':'🏪', '이 옷 어디꺼?':'🔍', '구매 후기':'📦' };
+
+  let _posts = [];            // 화면에 그려진 순서 그대로 — onclick은 이 배열의 인덱스를 넘긴다
+  let _filter = '전체';
+  let _photoData = '';        // 첨부 사진 (리사이즈된 dataURL)
+  let _submitting = false;
+  const _comments = {};       // { postId: [댓글...] } — 펼칠 때 그때그때 불러온다
+  const _openComments = new Set();  // 댓글창이 열려 있는 postId
+  const _drafts = {};         // { postId: 입력 중인 댓글 } — 재렌더에도 안 날아가게
+
+  // ── data:image URL만 허용 (safeUrl은 http/https 전용이라 첨부사진엔 못 씀) ──
+  function safeImg(u) {
+    u = String(u || '');
+    return /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u) ? u : '';
+  }
+
+  function timeAgo(ts) {
+    const d = ts?.toDate?.();
+    if (!d) return '방금 전';
+    const min = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (min < 1) return '방금 전';
+    if (min < 60) return `${min}분 전`;
+    if (min < 1440) return `${Math.floor(min / 60)}시간 전`;
+    if (min < 2880) return '어제';
+    if (min < 10080) return `${Math.floor(min / 1440)}일 전`;
+    return d.toLocaleDateString('ko-KR');
+  }
+
+  // ── 사진 첨부: Storage 없이 쓰려고 캔버스로 줄여 dataURL로 저장 ──
+  // Firestore 문서 상한이 1MiB라 긴 변을 1000px로 줄이고 JPEG로 재압축한다
+  window.handlePostPhoto = function(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const msg = document.getElementById('postMsg');
+    if (!/^image\//.test(file.type)) { msg.textContent = '이미지 파일만 첨부할 수 있어요.'; e.target.value = ''; return; }
+    msg.textContent = '사진을 처리하는 중…';
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1000;
+        let { width: w, height: h } = img;
+        if (w > MAX || h > MAX) {
+          const r = Math.min(MAX / w, MAX / h);
+          w = Math.round(w * r); h = Math.round(h * r);
+        }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+
+        let data = cv.toDataURL('image/jpeg', 0.72);
+        if (data.length > 700000) data = cv.toDataURL('image/jpeg', 0.5);
+        if (data.length > 900000) {
+          msg.textContent = '사진 용량이 너무 커요. 더 작은 사진을 써주세요.';
+          e.target.value = '';
+          return;
+        }
+        _photoData = data;
+        document.getElementById('postPhotoImg').src = data;
+        document.getElementById('postPhotoPreview').style.display = 'block';
+        msg.textContent = '';
+      };
+      img.onerror = () => { msg.textContent = '사진을 읽지 못했어요.'; e.target.value = ''; };
+      img.src = reader.result;
+    };
+    reader.onerror = () => { msg.textContent = '사진을 읽지 못했어요.'; e.target.value = ''; };
+    reader.readAsDataURL(file);
+  };
+
+  window.clearPostPhoto = function() {
+    _photoData = '';
+    document.getElementById('postPhotoInput').value = '';
+    document.getElementById('postPhotoPreview').style.display = 'none';
+    document.getElementById('postPhotoImg').src = '';
+  };
+
+  // ── 로그인 여부에 따라 작성폼/로그인안내 전환 ──
+  window.refreshComposer = function() {
+    const loginBox = document.getElementById('composerLogin');
+    const form = document.getElementById('composerForm');
+    if (!loginBox || !form) return;
+    const on = !!window._currentUser;
+    loginBox.style.display = on ? 'none' : 'block';
+    form.style.display = on ? 'block' : 'none';
+  };
+
+  // ── 글 작성 ──────────────────────────────────────────────
+  window.submitPost = async function() {
+    if (_submitting) return;
+    const user = window._currentUser;
+    const msg = document.getElementById('postMsg');
+    if (!user) { alert('로그인이 필요합니다.'); return; }
+
+    const nickname = (window._currentNickname || '').trim();
+    if (!nickname) {
+      msg.textContent = '';
+      alert('글을 쓰려면 먼저 마이페이지에서 닉네임을 정해주세요.');
+      window.switchPage('mypage');
+      return;
+    }
+
+    const text = document.getElementById('postText').value.trim();
+    const category = document.getElementById('postCategory').value;
+    if (!text && !_photoData) { msg.textContent = '내용을 입력하거나 사진을 첨부해주세요.'; return; }
+    if (!CATEGORIES.includes(category)) { msg.textContent = '카테고리를 다시 선택해주세요.'; return; }
+
+    // 태그: 쉼표 구분, # 떼고, 빈값·중복 제거, 최대 5개 / 각 12자
+    const tags = [...new Set(
+      document.getElementById('postTags').value
+        .split(',').map(t => t.trim().replace(/^#+/, '')).filter(Boolean)
+    )].slice(0, 5).map(t => t.slice(0, 12));
+
+    _submitting = true;
+    const btn = document.getElementById('postSubmitBtn');
+    btn.disabled = true;
+    msg.textContent = '게시하는 중…';
+    try {
+      await addDoc(collection(db, 'posts'), {
+        uid: user.uid,
+        nickname,
+        category,
+        text,
+        tags,
+        photo: _photoData,
+        likedBy: [],
+        commentCount: 0,
+        createdAt: serverTimestamp()
+      });
+      document.getElementById('postText').value = '';
+      document.getElementById('postTags').value = '';
+      window.clearPostPhoto();
+      msg.textContent = '';
+      await loadPosts();
+    } catch(e) {
+      console.error('글 게시 실패:', e);
+      msg.textContent = '글을 올리지 못했어요. 잠시 후 다시 시도해주세요.';
+    } finally {
+      _submitting = false;
+      btn.disabled = false;
+    }
+  };
+
+  // ── 글 불러오기 ──────────────────────────────────────────
+  // orderBy 하나만 써서 복합 인덱스 불필요. 카테고리 필터는 클라이언트에서 처리
+  async function loadPosts() {
+    const feed = document.getElementById('postFeed');
+    if (!feed) return;
+    try {
+      const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(50));
+      const snap = await getDocs(q);
+      _posts = [];
+      snap.forEach(d => _posts.push({ id: d.id, ...d.data() }));
+      renderCatFilter();
+      renderPosts();
+    } catch(e) {
+      console.error('글 로드 실패:', e);
+      renderCatFilter();
+      feed.innerHTML = '<div class="empty-state">글을 불러오지 못했어요.</div>';
+    }
+  }
+  window.loadPosts = loadPosts;
+
+  // ── 카테고리 필터 칩 (글 개수는 실제 데이터에서 센다) ──────
+  function renderCatFilter() {
+    const box = document.getElementById('catFilter');
+    if (!box) return;
+    const counts = {};
+    _posts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+    const chips = ['전체', ...CATEGORIES];
+    box.innerHTML = chips.map((c, i) => {
+      const n = c === '전체' ? _posts.length : (counts[c] || 0);
+      const label = c === '전체' ? '전체' : `${CAT_ICON[c] || ''} ${c}`;
+      return `<button class="cat-chip${c === _filter ? ' active' : ''}" onclick="setPostFilter(${i})">${esc(label)} ${n}</button>`;
+    }).join('');
+  }
+
+  window.setPostFilter = function(idx) {
+    _filter = ['전체', ...CATEGORIES][idx] || '전체';
+    renderCatFilter();
+    renderPosts();
+  };
+
+  // ── 글 렌더 ──────────────────────────────────────────────
+  function renderPosts() {
+    const feed = document.getElementById('postFeed');
+    if (!feed) return;
+    const list = _filter === '전체' ? _posts : _posts.filter(p => p.category === _filter);
+    if (!list.length) {
+      feed.innerHTML = `<div class="empty-state">${_posts.length ? '이 카테고리에는 아직 글이 없어요.' : '아직 글이 없어요. 첫 글을 남겨보세요.'}</div>`;
+      return;
+    }
+    feed.innerHTML = list.map(p => renderPostCard(p, _posts.indexOf(p))).join('');
+  }
+
+  // idx = _posts 배열 인덱스. onclick에 문자열을 보간하지 않기 위해 인덱스만 넘긴다
+  function renderPostCard(p, idx) {
+    const uid = window._currentUser?.uid;
+    const role = window._currentRole || 'user';
+    const nick = p.nickname || '(닉네임 없음)';
+    const likedBy = p.likedBy || [];
+    const liked = uid && likedBy.includes(uid);
+    const canDelete = uid && (p.uid === uid || role === 'admin' || role === 'super_admin');
+    const photo = safeImg(p.photo);
+
+    const tagHtml = (p.tags || []).length
+      ? `<div class="ootd-tags">${p.tags.map(t => `<span class="ootd-tag">#${esc(t)}</span>`).join('')}</div>`
+      : '';
+
+    return `
+      <div class="post">
+        <div class="post-head">
+          <div class="avatar">${esc(nick[0] || 'U')}</div>
+          <div>
+            <div class="post-name">${esc(nick)}</div>
+            <div class="post-time">${esc(timeAgo(p.createdAt))}</div>
+          </div>
+          <span class="cat-label">${esc(p.category || '')}</span>
+        </div>
+        <div class="post-body">
+          ${photo ? `<img class="post-photo" src="${photo}" alt="">` : ''}
+          ${tagHtml}
+          ${p.text ? `<p>${esc(p.text).replace(/\n/g, '<br>')}</p>` : ''}
+        </div>
+        <div class="post-foot">
+          <button id="like-btn-${idx}" class="post-act${liked ? ' liked' : ''}" onclick="togglePostLike(${idx})">${liked ? '♥' : '♡'} ${likedBy.length}</button>
+          <button class="post-act" onclick="toggleComments(${idx})">💬 ${p.commentCount || 0}</button>
+          ${canDelete ? `<button class="post-act danger" onclick="deletePost(${idx})">삭제</button>` : ''}
+        </div>
+        ${_openComments.has(p.id) ? renderComments(p, idx) : ''}
+      </div>`;
+  }
+
+  // ── 댓글 영역 렌더 ───────────────────────────────────────
+  function renderComments(p, idx) {
+    const uid = window._currentUser?.uid;
+    const role = window._currentRole || 'user';
+    const list = _comments[p.id];
+
+    let body;
+    if (!list) {
+      body = '<div class="comment-empty">댓글을 불러오는 중…</div>';
+    } else if (!list.length) {
+      body = '<div class="comment-empty">아직 댓글이 없어요.</div>';
+    } else {
+      body = list.map((c, ci) => {
+        const cn = c.nickname || '(닉네임 없음)';
+        // 댓글 삭제: 댓글 작성자 본인, 글 작성자, 관리자
+        const canDel = uid && (c.uid === uid || p.uid === uid || role === 'admin' || role === 'super_admin');
+        return `
+          <div class="comment">
+            <div class="comment-avatar">${esc(cn[0] || 'U')}</div>
+            <div class="comment-main">
+              <div class="comment-meta">
+                <span class="comment-name">${esc(cn)}</span>
+                <span class="comment-time">${esc(timeAgo(c.createdAt))}</span>
+                ${canDel ? `<button class="comment-del" onclick="deleteComment(${idx},${ci})">삭제</button>` : ''}
+              </div>
+              <div class="comment-text">${esc(c.text).replace(/\n/g, '<br>')}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    const form = uid ? `
+      <div class="comment-form">
+        <textarea class="comment-input" id="comment-input-${idx}" maxlength="300"
+          placeholder="댓글 남기기…" oninput="saveCommentDraft(${idx})">${esc(_drafts[p.id] || '')}</textarea>
+        <button class="btn fill" onclick="submitComment(${idx})" style="padding:.4rem .8rem;font-size:.74rem;">등록</button>
+      </div>` : '';
+
+    return `<div class="comments">${body}${form}</div>`;
+  }
+
+  // ── 좋아요 토글 ──────────────────────────────────────────
+  window.togglePostLike = async function(idx) {
+    const user = window._currentUser;
+    if (!user) { alert('로그인이 필요합니다.'); return; }
+    const p = _posts[idx];
+    if (!p) return;
+    const likedBy = p.likedBy || [];
+    const liked = likedBy.includes(user.uid);
+
+    // 낙관적 갱신 — 실패하면 되돌린다.
+    // 전체 재렌더 대신 버튼만 갈아끼움 (댓글 입력 중 포커스가 날아가지 않게)
+    p.likedBy = liked ? likedBy.filter(u => u !== user.uid) : [...likedBy, user.uid];
+    updateLikeButton(idx);
+    try {
+      await updateDoc(doc(db, 'posts', p.id), {
+        likedBy: liked ? arrayRemove(user.uid) : arrayUnion(user.uid)
+      });
+    } catch(e) {
+      console.error('좋아요 실패:', e);
+      p.likedBy = likedBy;
+      updateLikeButton(idx);
+    }
+  };
+
+  function updateLikeButton(idx) {
+    const btn = document.getElementById('like-btn-' + idx);
+    const p = _posts[idx];
+    if (!btn || !p) return;
+    const uid = window._currentUser?.uid;
+    const likedBy = p.likedBy || [];
+    const liked = uid && likedBy.includes(uid);
+    btn.className = 'post-act' + (liked ? ' liked' : '');
+    btn.textContent = `${liked ? '♥' : '♡'} ${likedBy.length}`;
+  }
+
+  // ── 글 삭제 (작성자 본인 또는 관리자) ─────────────────────
+  window.deletePost = async function(idx) {
+    const p = _posts[idx];
+    if (!p) return;
+    if (!confirm('이 글을 삭제할까요?')) return;
+    try {
+      // 서브컬렉션은 상위 문서를 지워도 같이 안 지워짐 → 댓글 먼저 정리
+      const cs = await getDocs(collection(db, 'posts', p.id, 'comments'));
+      await Promise.all(cs.docs.map(d => deleteDoc(doc(db, 'posts', p.id, 'comments', d.id))));
+      await deleteDoc(doc(db, 'posts', p.id));
+      _openComments.delete(p.id);
+      delete _comments[p.id];
+      delete _drafts[p.id];
+      await loadPosts();
+    } catch(e) {
+      console.error('글 삭제 실패:', e);
+      alert('글을 삭제하지 못했어요.');
+    }
+  };
+
+  // ── 댓글 ─────────────────────────────────────────────────
+  // posts/{id}/comments 서브컬렉션. 글 문서에 배열로 넣으면 사진(dataURL)이랑 합쳐서
+  // 1MiB 상한을 넘길 수 있어서 분리함. 펼칠 때만 읽는다
+  window.toggleComments = async function(idx) {
+    const p = _posts[idx];
+    if (!p) return;
+    if (_openComments.has(p.id)) {
+      _openComments.delete(p.id);
+      renderPosts();
+      return;
+    }
+    _openComments.add(p.id);
+    renderPosts();                       // "불러오는 중" 먼저 보여주고
+    await loadComments(p.id);
+  };
+
+  async function loadComments(postId) {
+    try {
+      const q = query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'), limit(100));
+      const snap = await getDocs(q);
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      _comments[postId] = list;
+    } catch(e) {
+      console.error('댓글 로드 실패:', e);
+      _comments[postId] = [];
+    }
+    if (_openComments.has(postId)) renderPosts();
+  }
+
+  window.saveCommentDraft = function(idx) {
+    const p = _posts[idx];
+    const el = document.getElementById('comment-input-' + idx);
+    if (p && el) _drafts[p.id] = el.value;
+  };
+
+  window.submitComment = async function(idx) {
+    const user = window._currentUser;
+    const p = _posts[idx];
+    if (!p) return;
+    if (!user) { alert('로그인이 필요합니다.'); return; }
+
+    const nickname = (window._currentNickname || '').trim();
+    if (!nickname) {
+      alert('댓글을 쓰려면 먼저 마이페이지에서 닉네임을 정해주세요.');
+      window.switchPage('mypage');
+      return;
+    }
+
+    const el = document.getElementById('comment-input-' + idx);
+    const text = (el?.value || '').trim();
+    if (!text) return;
+
+    el.disabled = true;
+    try {
+      await addDoc(collection(db, 'posts', p.id, 'comments'), {
+        uid: user.uid,
+        nickname,
+        text,
+        createdAt: serverTimestamp()
+      });
+      // 댓글 수는 글 문서에 세어둔다 (목록에서 서브컬렉션을 매번 읽지 않으려고)
+      await updateDoc(doc(db, 'posts', p.id), { commentCount: increment(1) });
+      p.commentCount = (p.commentCount || 0) + 1;
+      delete _drafts[p.id];
+      await loadComments(p.id);
+    } catch(e) {
+      console.error('댓글 작성 실패:', e);
+      alert('댓글을 남기지 못했어요.');
+      if (el) el.disabled = false;
+    }
+  };
+
+  window.deleteComment = async function(idx, ci) {
+    const p = _posts[idx];
+    const c = _comments[p?.id]?.[ci];
+    if (!p || !c) return;
+    if (!confirm('이 댓글을 삭제할까요?')) return;
+    try {
+      await deleteDoc(doc(db, 'posts', p.id, 'comments', c.id));
+      await updateDoc(doc(db, 'posts', p.id), { commentCount: increment(-1) });
+      p.commentCount = Math.max(0, (p.commentCount || 1) - 1);
+      await loadComments(p.id);
+    } catch(e) {
+      console.error('댓글 삭제 실패:', e);
+      alert('댓글을 삭제하지 못했어요.');
+    }
+  };
+
+  // ── 닉네임 변경 시 내가 쓴 글의 닉네임도 갱신 ──────────────
+  // 글에 닉네임을 복사해 저장하므로(읽을 때 users 조회를 안 하려고) 여기서 맞춰준다
+  window.syncMyPostNicknames = async function(nickname) {
+    const user = window._currentUser;
+    if (!user) return;
+    try {
+      const snap = await getDocs(query(collection(db, 'posts'), where('uid', '==', user.uid)));
+      await Promise.all(snap.docs.map(d => updateDoc(doc(db, 'posts', d.id), { nickname })));
+      if (document.getElementById('community')?.classList.contains('active')) loadPosts();
+    } catch(e) {
+      console.error('글 닉네임 동기화 실패:', e);
+    }
+  };
+
+  refreshComposer();
+</script>
 
 </body>
 </html>

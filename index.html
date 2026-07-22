@@ -235,6 +235,16 @@ nav {
 .act-no { padding:.4rem 1.1rem; background:transparent; border:1px solid #C0392B; color:#C0392B; font-family:'DM Sans',sans-serif; font-size:.78rem; cursor:pointer; }
 .act-edit { padding:.4rem 1.1rem; background:transparent; border:1px solid var(--border); color:var(--sepia); font-family:'DM Sans',sans-serif; font-size:.78rem; cursor:pointer; }
 
+/* ── ADMIN USER LIST (사용자 권한 관리) ── */
+.user-row { display:flex; align-items:center; gap:.75rem; padding:.8rem 1.2rem; border:1px solid var(--border); background:var(--warm); margin-bottom:1px; }
+.user-row-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:.15rem; }
+.user-row-info b { font-size:.88rem; font-weight:500; }
+.user-row-info span { font-size:.75rem; color:var(--sepia); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.user-row .badge-role { font-size:.7rem; padding:.2rem .65rem; letter-spacing:.05em; text-transform:uppercase; flex-shrink:0; }
+.user-row-select { padding:.35rem .6rem; border:1px solid var(--border); background:var(--cream); font-family:'DM Sans',sans-serif; font-size:.78rem; color:var(--ink); }
+.user-row-lock { font-size:.72rem; color:var(--dusty); flex-shrink:0; }
+@media (max-width:768px) { .user-row { flex-wrap:wrap; } }
+
 
 
 /* ── HAMBURGER ── */
@@ -963,6 +973,10 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
       <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;margin-bottom:1rem;">이벤트 · 세일 신청 검수</h3>
       <div id="adminEventList"><p style="font-size:.85rem;color:var(--dusty);">불러오는 중...</p></div>
     </div>
+    <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:400;margin-bottom:1rem;">사용자 권한 관리</h3>
+      <div id="adminUserList"><p style="font-size:.85rem;color:var(--dusty);">불러오는 중...</p></div>
+    </div>
     <p style="font-size:.78rem;color:var(--dusty);margin-top:1.5rem;font-family:'IM Fell English',serif;font-style:italic;">검수 기준: 스타일 일치도 · 제품 실존 여부 · 카테고리 어뷰징 여부</p>
   </div>
 </div>
@@ -1191,6 +1205,7 @@ window.switchPage = function(id) {
   if (id === 'events' && typeof loadEvents==='function') setTimeout(loadEvents, 200);
   // 관리자
   if (id === 'admin' && typeof loadAdminEvents==='function') setTimeout(loadAdminEvents, 200);
+  if (id === 'admin' && typeof loadAdminUsers==='function') setTimeout(loadAdminUsers, 200);
   // 마이페이지
   if (id === 'mypage' && window._currentUser && typeof updateMypageUI==='function') {
     setTimeout(function(){ updateMypageUI(window._currentUser, window._currentRole||'user'); }, 100);
@@ -1749,12 +1764,15 @@ function filterMapTag(el, tag) {
       window._currentRole = currentRole; // 신규 유저 케이스에서도 항상 갱신되도록 if/else 밖으로 이동
       updateNavUI(user, currentRole);
       updateMypageUI(user, currentRole);
+      // 관리자탭을 보고 있는 상태에서 로그인이 완료되면 사용자 목록 갱신
+      if (document.getElementById('admin')?.classList.contains('active')) loadAdminUsers();
     } else {
       currentUser = null;
       currentRole = 'user';
       window._currentUser = null;
       window._currentRole = 'user';
       updateNavUI(null, 'user');
+      if (document.getElementById('admin')?.classList.contains('active')) loadAdminUsers();
     }
   });
 
@@ -1871,6 +1889,78 @@ function filterMapTag(el, tag) {
     await updateDoc(doc(db, 'users', snap.docs[0].id), { role });
     document.getElementById('grantMsg').textContent = `✓ ${email} 에게 ${role === 'admin' ? '관리자' : '일반유저'} 권한을 부여했어요.`;
   }
+
+  // ── 관리자탭: 사용자 권한 관리 (최고관리자 전용) ──────────
+  async function loadAdminUsers() {
+    const box = document.getElementById('adminUserList');
+    if (!box) return;
+    if (!currentUser) {
+      box.innerHTML = '<p style="font-size:.85rem;color:var(--dusty);">로그인 후 이용할 수 있어요.</p>';
+      return;
+    }
+    if (currentRole !== 'super_admin') {
+      box.innerHTML = '<p style="font-size:.85rem;color:var(--dusty);">사용자 권한 변경은 최고관리자만 할 수 있어요.</p>';
+      return;
+    }
+    try {
+      const snap = await getDocs(collection(db, 'users'));
+      const users = [];
+      snap.forEach(d => users.push({ uid: d.id, ...d.data() }));
+      const order = { super_admin: 0, admin: 1, user: 2 };
+      users.sort((a, b) => ((order[a.role] ?? 2) - (order[b.role] ?? 2)) || (a.email || '').localeCompare(b.email || ''));
+      renderAdminUsers(users);
+    } catch(e) {
+      console.error('사용자 목록 로드 실패:', e);
+      box.innerHTML = '<p style="font-size:.85rem;color:var(--dusty);">사용자 목록을 불러오지 못했어요.</p>';
+    }
+  }
+
+  function renderAdminUsers(users) {
+    const box = document.getElementById('adminUserList');
+    if (!box) return;
+    if (!users.length) {
+      box.innerHTML = '<p style="font-size:.85rem;color:var(--dusty);">가입한 사용자가 없어요.</p>';
+      return;
+    }
+    const labels = { super_admin: '최고관리자', admin: '관리자', user: '일반유저' };
+    const classes = { super_admin: 'role-super', admin: 'role-admin', user: 'role-user' };
+    box.innerHTML = users.map(u => {
+      const role = u.role || 'user';
+      const isSelf = u.uid === currentUser.uid;
+      const locked = isSelf || role === 'super_admin'; // 본인·최고관리자는 UI에서 변경 불가
+      return `
+        <div class="user-row">
+          <div class="user-row-info">
+            <b>${esc(u.nickname) || '(닉네임 없음)'}</b>
+            <span>${esc(u.email)}</span>
+          </div>
+          <span class="badge-role ${classes[role] || 'role-user'}">${labels[role] || '일반유저'}</span>
+          ${locked
+            ? `<span class="user-row-lock">${isSelf ? '본인' : '변경 불가'}</span>`
+            : `<select id="role-sel-${u.uid}" class="user-row-select">
+                 <option value="user" ${role === 'user' ? 'selected' : ''}>일반유저</option>
+                 <option value="admin" ${role === 'admin' ? 'selected' : ''}>관리자</option>
+               </select>
+               <button class="act-ok" onclick="changeUserRole('${u.uid}')">변경</button>`}
+        </div>`;
+    }).join('');
+  }
+
+  window.changeUserRole = async function(uid) {
+    if (currentRole !== 'super_admin') { alert('권한이 없습니다.'); return; }
+    const sel = document.getElementById('role-sel-' + uid);
+    if (!sel) return;
+    try {
+      await updateDoc(doc(db, 'users', uid), { role: sel.value });
+      loadAdminUsers(); // 목록 새로고침으로 변경 결과 표시
+    } catch(e) {
+      console.error(e);
+      alert('권한 변경에 실패했어요.');
+    }
+  }
+
+  // switchPage의 typeof 체크에서 쓰도록 전역 노출
+  window.loadAdminUsers = loadAdminUsers;
 
   // ── 드롭다운 ─────────────────────────────────────────────
   window.toggleUserDropdown = function(e) {

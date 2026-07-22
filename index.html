@@ -215,23 +215,26 @@ nav {
   position:absolute; top:.5rem; right:.5rem; font-family:'DM Sans',sans-serif; font-size:.72rem;
   background:var(--warm); border:1px solid var(--border); color:var(--rust); padding:.25rem .6rem; cursor:pointer;
 }
-/* 검색 (ejj EJJ) */
-.search-bar { position:relative; margin-bottom:.75rem; }
-.search-input {
-  width:100%; font-family:'DM Sans',sans-serif; font-size:.84rem; color:var(--ink);
+/* 커뮤니티 검색 (ejj EJJ) */
+/* 주의: 큐레이션 페이지가 이미 .search-bar / .search-bar input 을 쓰고 있음.
+   같은 이름을 쓰면 max-width:560px·margin:0 auto 가 딸려와서 폭이 줄고 가운데 정렬됨.
+   그래서 post- 접두사로 분리 */
+.post-search { position:relative; margin-bottom:.75rem; }
+.post-search-input {
+  width:100%; display:block; font-family:'DM Sans',sans-serif; font-size:.84rem; color:var(--ink);
   background:var(--warm); border:1px solid var(--border); padding:.6rem 2.2rem .6rem .75rem;
   outline:none; transition:border-color .2s;
 }
-.search-input:focus { border-color:var(--sepia); }
-.search-input::placeholder { color:var(--dusty); }
-.search-clear {
+.post-search-input:focus { border-color:var(--sepia); }
+.post-search-input::placeholder { color:var(--dusty); }
+.post-search-clear {
   position:absolute; right:.5rem; top:50%; transform:translateY(-50%);
   background:none; border:none; color:var(--dusty); cursor:pointer; font-size:1rem; line-height:1;
   padding:.2rem .35rem; font-family:'DM Sans',sans-serif;
 }
-.search-clear:hover { color:var(--rust); }
-.search-meta { font-size:.75rem; color:var(--dusty); margin-bottom:.75rem; }
-.search-meta b { color:var(--rust); font-weight:500; }
+.post-search-clear:hover { color:var(--rust); }
+.post-search-meta { font-size:.75rem; color:var(--dusty); margin-bottom:.75rem; }
+.post-search-meta b { color:var(--rust); font-weight:500; }
 mark { background:#F5E4C3; color:var(--ink); padding:0 .1em; }
 /* 카테고리 필터 (사이드바 대체) */
 .cat-filter { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:1.1rem; }
@@ -836,12 +839,12 @@ footer p { font-size:.75rem; color:var(--dusty); font-family:'IM Fell English',s
       </div>
 
       <!-- 검색 — 불러온 글 안에서 제목·내용·태그를 훑음 -->
-      <div class="search-bar">
-        <input type="text" id="postSearch" class="search-input" maxlength="50"
+      <div class="post-search">
+        <input type="text" id="postSearch" class="post-search-input" maxlength="50"
                placeholder="제목 · 내용 · 태그 검색" oninput="setPostSearch()">
-        <button class="search-clear" id="searchClear" onclick="clearPostSearch()" style="display:none;" aria-label="검색어 지우기">✕</button>
+        <button class="post-search-clear" id="searchClear" onclick="clearPostSearch()" style="display:none;" aria-label="검색어 지우기">✕</button>
       </div>
-      <div class="search-meta" id="searchMeta" style="display:none;"></div>
+      <div class="post-search-meta" id="searchMeta" style="display:none;"></div>
 
       <!-- 카테고리 필터 (클라이언트에서 걸러냄) -->
       <div class="cat-filter" id="catFilter"></div>
@@ -1212,7 +1215,34 @@ document.getElementById('overlay').addEventListener('click', e => {
 });
 
 // ── NAV ──────────────────────────────────────────────────
+// ── 관리자 접근 제어 (ejj EJJ) ────────────────────────────
+// 진짜 방어선은 Firestore 규칙이고 여기는 UI 차원의 차단.
+// 그래도 껍데기라도 열리면 안 되는 게, 안 보여야 할 화면이 열린다는 것 자체가
+// 권한이 있는 것처럼 착각하게 만들고 "불러오는 중..." 무한 대기로 이어짐
+window.isAdminRole = function() {
+  return ['admin', 'super_admin'].includes(window._currentRole);
+};
+
+// 관리자 진입점 4곳을 한꺼번에 켜고 끈다 (하나라도 빠뜨리면 그리로 새어 들어감)
+window.applyAdminVisibility = function() {
+  const show = window.isAdminRole();
+  const targets = [
+    document.querySelector('.nl[data-p="admin"]')?.closest('li'),
+    document.getElementById('adminMenuLink'),
+    document.querySelector('.dn[data-p="admin"]'),
+    document.querySelector('.mnt[data-p="admin"]')
+  ];
+  targets.forEach(el => { if (el) el.style.display = show ? '' : 'none'; });
+};
+// 로그인 확인 전에는 숨긴 상태로 시작 — 관리자로 판명되면 그때 켠다
+window.applyAdminVisibility();
+
 window.switchPage = function(id) {
+  // 권한 없이 관리자탭으로 들어오려는 시도는 여기서 되돌린다
+  if (id === 'admin' && !window.isAdminRole()) {
+    alert('관리자 권한이 필요한 페이지예요.');
+    id = 'discover';
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   var target = document.getElementById(id);
   if(target) target.classList.add('active');
@@ -1474,6 +1504,9 @@ loadStyles();
       // 관리자가 아니면 전체 조회가 규칙에 막힘 → 숫자를 0으로 속이지 말고 —로 둔다
       ['adminPendingTop','statPending','statApproved','statRejected','statRevision']
         .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
+      // 목록도 반드시 채워야 함. 안 그러면 "불러오는 중..."에서 영원히 멈춤
+      const box = document.getElementById('adminEventList');
+      if (box) box.innerHTML = '<p style="font-size:.85rem;color:var(--dusty);">이벤트 목록은 관리자만 볼 수 있어요.</p>';
     }
   }
 
@@ -1919,7 +1952,6 @@ function filterMapTag(el, tag) {
     const navCta = document.getElementById('navCta');
     const navUser = document.getElementById('navUser');
     const navAvatar = document.getElementById('navAvatar');
-    const adminLink = document.getElementById('adminMenuLink');
 
     if (user) {
       navCta.style.display = 'none';
@@ -1930,12 +1962,17 @@ function filterMapTag(el, tag) {
       } else {
         navAvatar.innerHTML = `<div class="user-avatar-placeholder" onclick="toggleUserDropdown(event)">${(user.displayName||'U')[0]}</div>`;
       }
-      if (role === 'admin' || role === 'super_admin') {
-        if(adminLink) adminLink.style.display = 'block';
-      }
     } else {
       navCta.style.display = 'flex';
       navUser.style.display = 'none';
+    }
+    // 관리자 진입점 표시 갱신.
+    // 예전에는 admin일 때 'block'으로 켜기만 하고 끄지 않아서, 관리자가 로그아웃하고
+    // 일반 유저가 로그인하면 링크가 그대로 남아 있었음
+    if (typeof window.applyAdminVisibility === 'function') window.applyAdminVisibility();
+    // 관리자탭을 보던 중 권한을 잃으면(로그아웃 등) 그 자리에서 내보낸다
+    if (!window.isAdminRole() && document.getElementById('admin')?.classList.contains('active')) {
+      window.switchPage('discover');
     }
   }
 
